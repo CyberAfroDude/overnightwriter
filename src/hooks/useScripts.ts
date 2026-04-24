@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { Script, Draft, DraftBlock, Writer } from '../types'
 import { useAuth } from './useAuth'
 import { v4 as uuidv4 } from 'uuid'
+import { normalizeDraftBlocks } from '../lib/editor/screenplayDocAdapter'
 
 export function useScripts() {
   const { user } = useAuth()
@@ -98,15 +99,25 @@ export function useDraft(scriptId: string | null, draftNumber: number | null) {
 
   useEffect(() => { fetchDraft() }, [fetchDraft])
 
+  /**
+   * Layer 2: After save, merge server row but keep `content` as the normalized payload we just wrote.
+   * The editor + Editor `blocks` stay authoritative; the `.select()` body is not treated as a second editor.
+   */
   const saveDraft = async (content: DraftBlock[]) => {
     if (!draft) return
+    const normalized = normalizeDraftBlocks(content)
     const { data } = await supabase
       .from('drafts')
-      .update({ content, updated_at: new Date().toISOString() })
+      .update({ content: normalized, updated_at: new Date().toISOString() })
       .eq('id', draft.id)
       .select()
       .single()
-    if (data) setDraft(data)
+    if (data) {
+      setDraft(prev => {
+        if (!prev || prev.id !== data.id) return data
+        return { ...data, content: normalized }
+      })
+    }
   }
 
   const getDraftsForScript = async (scriptId: string): Promise<Draft[]> => {

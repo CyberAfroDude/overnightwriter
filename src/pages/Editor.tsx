@@ -109,7 +109,7 @@ export default function Editor() {
       .then(({ data }) => { if (data) setScript(data) })
   }, [scriptId])
 
-  // FIX #4: Only reset blocks when draft ID actually changes. useLayoutEffect + flushSync so child sees correct blocks before paint (Layer 1).
+  // Layer 1+2: Full hydrate only when `draft.id` changes (switch/load). Autosave updates the draft row but does not bump `contentEpoch` or replace `blocks` here — see `saveDraft` in useDraft.
   useLayoutEffect(() => {
     if (!draft?.content) return
     const normalized = normalizeDraftBlocks(draft.content)
