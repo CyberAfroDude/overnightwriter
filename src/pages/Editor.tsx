@@ -67,6 +67,30 @@ function parsePastedText(text: string): DraftBlock[] {
   return blocks.length > 0 ? blocks : [{ id: uuidv4(), type: 'scene-heading', text: '', ai_written: false }]
 }
 
+function normalizeDraftBlocks(content: DraftBlock[]): DraftBlock[] {
+  const blocks = Array.isArray(content) ? content : []
+  const meaningful = blocks.filter(block => {
+    const text = (block.text || '').replace(/\u200B/g, '').trim()
+    return text.length > 0
+  })
+
+  // If there is real screenplay content, strip empty placeholder blocks entirely.
+  if (meaningful.length > 0) return meaningful
+
+  // Keep a single empty starter block when draft is genuinely empty.
+  if (blocks.length > 0) {
+    const first = blocks[0]
+    return [{
+      ...first,
+      type: first.type || 'scene-heading',
+      text: '',
+      ai_written: first.ai_written ?? false
+    }]
+  }
+
+  return [{ id: uuidv4(), type: 'scene-heading', text: '', ai_written: false }]
+}
+
 export default function Editor() {
   const { scriptId, draftNumber } = useParams()
   const navigate = useNavigate()
@@ -107,14 +131,15 @@ export default function Editor() {
   // FIX #4: Only reset blocks when draft ID actually changes
   useEffect(() => {
     if (draft?.content) {
-      setBlocks(draft.content)
+      setBlocks(normalizeDraftBlocks(draft.content))
       // FIX #9: Scroll to bottom when opening a script
       setTimeout(() => {
         if (editorScrollRef.current) {
           editorScrollRef.current.scrollTop = editorScrollRef.current.scrollHeight
         }
         // Also focus the last block
-        const lastBlock = draft.content[draft.content.length - 1]
+        const normalized = normalizeDraftBlocks(draft.content)
+        const lastBlock = normalized[normalized.length - 1]
         if (lastBlock) {
           const event = new CustomEvent('focus-last-block', { detail: { blockId: lastBlock.id } })
           window.dispatchEvent(event)
@@ -124,7 +149,7 @@ export default function Editor() {
   }, [draft?.id])
 
   const handleSave = useCallback(async (content: DraftBlock[]) => {
-    await saveDraft(content)
+    await saveDraft(normalizeDraftBlocks(content))
   }, [saveDraft])
 
   const { saving, manualSave } = useAutosave(blocks, handleSave, autosaveEnabled)
@@ -222,7 +247,7 @@ export default function Editor() {
     if (pastedText.trim().length < 10) return false
     const parsed = parsePastedText(pastedText)
     if (parsed.length > 1) {
-      setBlocks(parsed)
+      setBlocks(normalizeDraftBlocks(parsed))
       return true
     }
     return false
