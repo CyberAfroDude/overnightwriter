@@ -7,7 +7,8 @@ import { useSubscription } from '../hooks/useSubscription'
 import { useViewport } from '../hooks/useViewport'
 import { supabase } from '../lib/supabase'
 import { Script, DraftBlock, ElementType } from '../types'
-import ScreenplayEditor, { ELEMENT_LABELS } from '../components/editor/ScreenplayEditor'
+import ScreenplayEditorV2 from '../components/editor/ScreenplayEditorV2'
+import { ELEMENT_LABELS } from '../components/editor/screenplayModel'
 import TitlePage from '../components/editor/TitlePage'
 import EditorSidebar from '../components/editor/EditorSidebar'
 import AIGenerateBar from '../components/editor/AIGenerateBar'
@@ -15,6 +16,7 @@ import PricingModal from '../components/pricing/PricingModal'
 import { exportFountain, exportTXT, exportFDX, exportPDF } from '../lib/export'
 import { canAccess } from '../lib/config'
 import { v4 as uuidv4 } from 'uuid'
+import { normalizeDraftBlocks } from '../lib/editor/screenplayDocAdapter'
 
 const FloppyIcon = () => (
   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -65,30 +67,6 @@ function parsePastedText(text: string): DraftBlock[] {
     lastType = type
   }
   return blocks.length > 0 ? blocks : [{ id: uuidv4(), type: 'scene-heading', text: '', ai_written: false }]
-}
-
-function normalizeDraftBlocks(content: DraftBlock[]): DraftBlock[] {
-  const blocks = Array.isArray(content) ? content : []
-  const meaningful = blocks.filter(block => {
-    const text = (block.text || '').replace(/\u200B/g, '').trim()
-    return text.length > 0
-  })
-
-  // If there is real screenplay content, strip empty placeholder blocks entirely.
-  if (meaningful.length > 0) return meaningful
-
-  // Keep a single empty starter block when draft is genuinely empty.
-  if (blocks.length > 0) {
-    const first = blocks[0]
-    return [{
-      ...first,
-      type: first.type || 'scene-heading',
-      text: '',
-      ai_written: first.ai_written ?? false
-    }]
-  }
-
-  return [{ id: uuidv4(), type: 'scene-heading', text: '', ai_written: false }]
 }
 
 export default function Editor() {
@@ -281,9 +259,6 @@ export default function Editor() {
 
   // Mobile-responsive styles
   const sidebarWidth = isMobile ? '100%' : '224px'
-  const pagePadding = isMobile ? '16px' : '1in 1.5in'
-  const titlePagePadding = isMobile ? '40px 24px' : '1in 1.5in'
-
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#fff', overflow: 'hidden' }}>
 
@@ -438,7 +413,7 @@ export default function Editor() {
             </div>
 
             {/* Screenplay pages */}
-            <ScreenplayEditor
+            <ScreenplayEditorV2
               blocks={blocks}
               onChange={setBlocks}
               onElementChange={setCurrentElement}
