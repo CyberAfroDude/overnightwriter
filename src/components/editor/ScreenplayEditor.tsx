@@ -260,6 +260,8 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
     }
   }
 
+  const hasVisibleContent = (text: string) => text.replace(/\u200B/g, '').trim().length > 0
+
   return (
     <div style={{
       width: '100%',
@@ -271,7 +273,7 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
     }}>
       {blocks.map((block) => {
         const isEditing = editingRef.current === block.id
-        const isEmpty = !block.text.trim()
+        const isEmpty = !hasVisibleContent(block.text)
         
         return (
           <div key={block.id} style={{ position: 'relative' }}>
@@ -301,6 +303,7 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
                 block.type === 'action' ? 'Action description...' :
                 block.type === 'parenthetical' ? '(beat)' :
                 'CUT TO:'}
+              data-has-content={isEmpty ? 'false' : 'true'}
               style={{
                 outline: 'none',
                 minHeight: '1.8em',
@@ -354,10 +357,11 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
         )
       })}
       <style>{`
-        [contenteditable]:empty:before {
+        [contenteditable][data-has-content="false"]::before {
           content: attr(data-placeholder);
           color: #ccc;
           pointer-events: none;
+          display: block;
         }
       `}</style>
     </div>

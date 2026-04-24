@@ -217,7 +217,7 @@ export default function Settings() {
           <label style={labelStyle}>Manage Subscription</label>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <button onClick={() => setPricingOpen(true)} style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.1em', padding: '10px 20px', background: '#111', color: '#fff', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-              View Plans & Pricing →
+              Manage Subscription →
             </button>
             {plan !== 'free' && (
               <button onClick={async () => {
@@ -225,7 +225,7 @@ export default function Settings() {
                 const { url } = await res.json()
                 if (url) window.location.href = url
               }} style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.1em', padding: '10px 20px', background: 'transparent', color: '#111', border: '0.5px solid #111', cursor: 'pointer', textAlign: 'left' }}>
-                Cancel or Downgrade Plan →
+                Billing Portal (cancel / payment methods) →
               </button>
             )}
           </div>

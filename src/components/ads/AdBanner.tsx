@@ -56,8 +56,9 @@ export default function AdBanner() {
     <div style={{
       position: 'fixed',
       bottom: 0,
-      left: isMobile ? 0 : '224px',
-      right: 0,
+      left: '50%',
+      transform: 'translateX(-50%)',
+      width: isMobile ? 'calc(100% - 24px)' : 'min(calc(100% - 48px), 8.5in)',
       height: '60px',
       background: '#fafafa',
       borderTop: '0.5px solid #e8e8e8',
@@ -67,8 +68,8 @@ export default function AdBanner() {
       zIndex: 50,
       overflow: 'hidden'
     }}>
-      {/* Ad container — matches page width (8.5in = 816px) */}
-      <div style={{ width: '100%', maxWidth: '816px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+      {/* Ad container — constrained to screenplay page width */}
+      <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
         {/* AdSense unit */}
         <div ref={adRef} style={{ width: '100%', maxWidth: '728px', height: '60px' }}>
           <ins
