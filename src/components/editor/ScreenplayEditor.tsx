@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { DraftBlock, ElementType } from '../../types'
+import { useViewport } from '../../hooks/useViewport'
 import { v4 as uuidv4 } from 'uuid'
 
 const ELEMENT_CYCLE: ElementType[] = [
@@ -20,7 +21,7 @@ const ELEMENT_LABELS: Record<ElementType, string> = {
   'transition': 'Transition'
 }
 
-const ELEMENT_STYLES: Record<ElementType, React.CSSProperties> = {
+const ELEMENT_STYLES = (isMobile: boolean): Record<ElementType, React.CSSProperties> => ({
   'scene-heading': {
     textTransform: 'uppercase',
     letterSpacing: '0.04em',
@@ -30,16 +31,16 @@ const ELEMENT_STYLES: Record<ElementType, React.CSSProperties> = {
   'action': { marginTop: '0.5em' },
   'character': {
     textTransform: 'uppercase',
-    paddingLeft: '2.2in',
+    paddingLeft: isMobile ? '1in' : '2.2in',
     marginTop: '0.8em'
   },
   'dialogue': {
-    paddingLeft: '1.2in',
-    paddingRight: '1.2in'
+    paddingLeft: isMobile ? '0.5in' : '1.2in',
+    paddingRight: isMobile ? '0.5in' : '1.2in'
   },
   'parenthetical': {
-    paddingLeft: '1.7in',
-    paddingRight: '1.7in',
+    paddingLeft: isMobile ? '0.75in' : '1.7in',
+    paddingRight: isMobile ? '0.75in' : '1.7in',
     fontStyle: 'italic'
   },
   'transition': {
@@ -47,7 +48,7 @@ const ELEMENT_STYLES: Record<ElementType, React.CSSProperties> = {
     textAlign: 'right',
     marginTop: '0.5em'
   }
-}
+})
 
 interface Props {
   blocks: DraftBlock[]
@@ -59,6 +60,8 @@ interface Props {
 export default function ScreenplayEditor({ blocks, onChange, onElementChange, onPaste }: Props) {
   const [focusedId, setFocusedId] = useState<string | null>(null)
   const blockRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const { isMobile } = useViewport()
+  const elementStyles = ELEMENT_STYLES(isMobile)
 
   const getFocusedBlock = () => blocks.find(b => b.id === focusedId)
 
@@ -183,7 +186,7 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
             outline: 'none',
             minHeight: '1.8em',
             color: block.ai_written ? '#2563eb' : '#111',
-            ...ELEMENT_STYLES[block.type],
+            ...elementStyles[block.type],
             position: 'relative'
           }}
         />

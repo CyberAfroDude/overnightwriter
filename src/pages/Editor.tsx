@@ -4,6 +4,7 @@ import { useScripts, useDraft } from '../hooks/useScripts'
 import { useAutosave } from '../hooks/useAutosave'
 import { useAuth } from '../hooks/useAuth'
 import { useSubscription } from '../hooks/useSubscription'
+import { useViewport } from '../hooks/useViewport'
 import { supabase } from '../lib/supabase'
 import { Script, DraftBlock, ElementType } from '../types'
 import ScreenplayEditor, { ELEMENT_LABELS } from '../components/editor/ScreenplayEditor'
@@ -88,6 +89,7 @@ export default function Editor() {
   const [pricingOpen, setPricingOpen] = useState(false)
   const [showScenePanel, setShowScenePanel] = useState(false)
   const isSwitchingRef = useRef(false)
+  const { isMobile } = useViewport()
 
   // Load script metadata
   useEffect(() => {
@@ -201,27 +203,56 @@ export default function Editor() {
     justifyContent: 'center', position: 'relative' as const
   }
 
+  // Mobile-responsive styles
+  const sidebarWidth = isMobile ? '100%' : '224px'
+  const pagePadding = isMobile ? '16px' : '1in 1.5in'
+  const titlePagePadding = isMobile ? '40px 24px' : '1in 1.5in'
+
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#fff', overflow: 'hidden' }}>
 
       {/* Sidebar */}
       {sidebarOpen && (
-        <EditorSidebar
-          scripts={scripts}
-          currentScriptId={scriptId || ''}
-          currentDraftNumber={parseInt(draftNumber || '1')}
-          onDraftSwitch={handleDraftSwitch}
-          onNewDraft={handleNewDraft}
-          onDeleteDraft={deleteDraft}
-          onDeleteScript={deleteScript}
-        />
+        <div style={{
+          position: isMobile ? 'absolute' : 'relative',
+          top: 0, left: 0, bottom: 0,
+          width: sidebarWidth,
+          zIndex: isMobile ? 150 : 1,
+          background: '#fff'
+        }}>
+          <EditorSidebar
+            scripts={scripts}
+            currentScriptId={scriptId || ''}
+            currentDraftNumber={parseInt(draftNumber || '1')}
+            onDraftSwitch={handleDraftSwitch}
+            onNewDraft={handleNewDraft}
+            onDeleteDraft={deleteDraft}
+            onDeleteScript={deleteScript}
+          />
+          {isMobile && (
+            <div
+              onClick={() => setSidebarOpen(false)}
+              style={{
+                position: 'fixed',
+                top: 0, right: 0, bottom: 0,
+                width: '40px',
+                background: 'rgba(0,0,0,0.05)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <span style={{ color: '#999', fontSize: '18px' }}>›</span>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Main editor */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
         {/* Topbar */}
-        <div style={{ display: 'flex', alignItems: 'center', padding: '10px 16px', borderBottom: '0.5px solid #e8e8e8', gap: '10px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', padding: isMobile ? '10px 12px' : '10px 16px', borderBottom: '0.5px solid #e8e8e8', gap: isMobile ? '6px' : '10px', flexShrink: 0 }}>
           <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 }}>
             <span style={{ display: 'block', width: '18px', height: '1px', background: '#111' }} />
             <span style={{ display: 'block', width: '18px', height: '1px', background: '#111' }} />
@@ -237,26 +268,32 @@ export default function Editor() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-            <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '9px', letterSpacing: '0.08em', color: '#ccc', whiteSpace: 'nowrap', padding: '0 4px' }}>
-              {saving ? '● saving' : showSavedNotice ? '● saved' : '● autosaved'}
-            </div>
+            {!isMobile && (
+              <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '9px', letterSpacing: '0.08em', color: '#ccc', whiteSpace: 'nowrap', padding: '0 4px' }}>
+                {saving ? '● saving' : showSavedNotice ? '● saved' : '● autosaved'}
+              </div>
+            )}
 
             {/* Floppy save */}
             <button onClick={handleManualSave} style={iconBtnStyle} title="Save"><FloppyIcon /></button>
 
             {/* FIX #3: Explicit new draft button */}
-            <button onClick={handleNewDraft} style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#aaa', padding: '5px 8px' }} title="New Draft">
-              + Draft
-            </button>
+            {!isMobile && (
+              <button onClick={handleNewDraft} style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#aaa', padding: '5px 8px' }} title="New Draft">
+                + Draft
+              </button>
+            )}
 
             {/* FIX #9: Scene/Character panel toggle */}
-            <button
-              onClick={() => setShowScenePanel(!showScenePanel)}
-              title="Scenes & Characters"
-              style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: showScenePanel ? '#111' : '#aaa', padding: '5px 8px', border: showScenePanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
-            >
-              ¶
-            </button>
+            {!isMobile && (
+              <button
+                onClick={() => setShowScenePanel(!showScenePanel)}
+                title="Scenes & Characters"
+                style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: showScenePanel ? '#111' : '#aaa', padding: '5px 8px', border: showScenePanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
+              >
+                ¶
+              </button>
+            )}
 
             {/* AI generate */}
             <button
@@ -308,7 +345,7 @@ export default function Editor() {
             </div>
 
             {/* Screenplay page */}
-            <div style={{ width: '100%', maxWidth: '8.5in', minHeight: '11in', background: '#fff', border: '0.5px solid #e8e8e8', borderTop: 'none', padding: '1in 1.5in', boxSizing: 'border-box' }}>
+            <div style={{ width: '100%', maxWidth: '8.5in', minHeight: '11in', background: '#fff', border: isMobile ? 'none' : '0.5px solid #e8e8e8', borderTop: 'none', padding: pagePadding, boxSizing: 'border-box' }}>
               <div style={{ textAlign: 'right', fontFamily: '"DM Mono", monospace', fontSize: '10px', color: '#ccc', marginBottom: '24px' }}>1.</div>
               <ScreenplayEditor
                 blocks={blocks}
@@ -322,7 +359,7 @@ export default function Editor() {
           </div>
 
           {/* FIX #9: Scene & Character panel */}
-          {showScenePanel && (
+          {showScenePanel && !isMobile && (
             <div style={{ width: '200px', borderLeft: '0.5px solid #e8e8e8', overflowY: 'auto', flexShrink: 0, padding: '16px 0', background: '#fff' }}>
               <div style={{ padding: '0 16px 12px', borderBottom: '0.5px solid #f0f0f0', marginBottom: '12px' }}>
                 <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '9px', letterSpacing: '0.15em', color: '#aaa', textTransform: 'uppercase', marginBottom: '8px' }}>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useViewport } from '../hooks/useViewport'
 
 export default function Landing() {
   const { signIn, signUp, signInWithOAuth, signInWithMagicLink } = useAuth()
@@ -43,6 +44,8 @@ export default function Landing() {
     // OAuth redirects, so no navigate needed
   }
 
+  const { isMobile } = useViewport()
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -51,7 +54,7 @@ export default function Landing() {
       alignItems: 'center',
       justifyContent: 'center',
       background: '#fff',
-      padding: '40px'
+      padding: isMobile ? '24px' : '40px'
     }}>
       <div style={{ textAlign: 'center', maxWidth: '480px', width: '100%' }}>
 
@@ -94,7 +97,7 @@ export default function Landing() {
 
         {/* Auth Form */}
         {mode === 'none' ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '12px' : '16px', alignItems: 'center' }}>
             {/* Social login buttons */}
             <button
               onClick={() => handleOAuth('google')}
@@ -108,7 +111,7 @@ export default function Landing() {
                 color: '#444',
                 border: '0.5px solid #ddd',
                 cursor: loading ? 'not-allowed' : 'pointer',
-                width: '260px',
+                width: isMobile ? '100%' : '260px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -131,7 +134,7 @@ export default function Landing() {
                 color: '#fff',
                 border: 'none',
                 cursor: loading ? 'not-allowed' : 'pointer',
-                width: '260px',
+                width: isMobile ? '100%' : '260px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -142,13 +145,13 @@ export default function Landing() {
               Continue with Apple
             </button>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '260px', margin: '8px 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: isMobile ? '100%' : '260px', margin: '8px 0' }}>
               <div style={{ flex: 1, height: '0.5px', background: '#e8e8e8' }} />
               <span style={{ fontFamily: '"DM Mono", monospace', fontSize: '9px', color: '#ccc', letterSpacing: '0.1em' }}>or</span>
               <div style={{ flex: 1, height: '0.5px', background: '#e8e8e8' }} />
             </div>
 
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', width: isMobile ? '100%' : 'auto' }}>
               <button
                 onClick={() => setMode('signin')}
                 style={{
@@ -159,7 +162,8 @@ export default function Landing() {
                   background: 'transparent',
                   color: '#666',
                   border: '0.5px solid #ccc',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  flex: isMobile ? 1 : 'auto'
                 }}
               >
                 Sign In
@@ -174,7 +178,8 @@ export default function Landing() {
                   background: '#111',
                   color: '#fff',
                   border: 'none',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  flex: isMobile ? 1 : 'auto'
                 }}
               >
                 Sign Up Free
@@ -235,7 +240,7 @@ export default function Landing() {
                   style={{
                     fontFamily: '"DM Mono", monospace',
                     fontSize: '13px',
-                    width: '300px',
+                    width: isMobile ? '100%' : '300px',
                     padding: '10px 0',
                     border: 'none',
                     borderBottom: '0.5px solid #ccc',
@@ -294,7 +299,7 @@ export default function Landing() {
               style={{
                 fontFamily: '"DM Mono", monospace',
                 fontSize: '13px',
-                width: '300px',
+                width: isMobile ? '100%' : '300px',
                 padding: '10px 0',
                 border: 'none',
                 borderBottom: '0.5px solid #ccc',
@@ -312,7 +317,7 @@ export default function Landing() {
               style={{
                 fontFamily: '"DM Mono", monospace',
                 fontSize: '13px',
-                width: '300px',
+                width: isMobile ? '100%' : '300px',
                 padding: '10px 0',
                 border: 'none',
                 borderBottom: '0.5px solid #ccc',
