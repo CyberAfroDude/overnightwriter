@@ -2,8 +2,6 @@ import { JSONContent } from '@tiptap/core'
 import { v4 as uuidv4 } from 'uuid'
 import { DraftBlock, ElementType } from '../../types'
 
-const normalizeText = (text: string) => text.replace(/\u200B/g, '').trim()
-
 const defaultBlock = (): DraftBlock => ({
   id: uuidv4(),
   type: 'scene-heading',
@@ -13,25 +11,13 @@ const defaultBlock = (): DraftBlock => ({
 
 export function normalizeDraftBlocks(content: DraftBlock[]): DraftBlock[] {
   const blocks = Array.isArray(content) ? content : []
-  const meaningful = blocks.filter(block => normalizeText(block.text || '').length > 0)
-
-  if (meaningful.length > 0) {
-    return meaningful.map(block => ({
+  if (blocks.length > 0) {
+    return blocks.map((block, index) => ({
       id: block.id || uuidv4(),
-      type: block.type,
+      type: block.type || (index === 0 ? 'scene-heading' : 'action'),
       text: block.text || '',
       ai_written: block.ai_written ?? false
     }))
-  }
-
-  if (blocks.length > 0) {
-    return [{
-      ...blocks[0],
-      id: blocks[0].id || uuidv4(),
-      type: blocks[0].type || 'scene-heading',
-      text: '',
-      ai_written: blocks[0].ai_written ?? false
-    }]
   }
 
   return [defaultBlock()]

@@ -163,8 +163,7 @@ export default function ScreenplayEditorV2({ blocks, onChange, onElementChange, 
     if (!editor || !hostRef.current) return
     const updatePages = () => {
       const contentHeight = editor.view.dom.scrollHeight
-      const fullPage = PAGE_HEIGHT + PAGE_GAP
-      setPages(Math.max(1, Math.ceil(contentHeight / fullPage)))
+      setPages(Math.max(1, Math.ceil(contentHeight / PAGE_HEIGHT)))
     }
     updatePages()
     const observer = new ResizeObserver(updatePages)
@@ -258,16 +257,18 @@ export default function ScreenplayEditorV2({ blocks, onChange, onElementChange, 
       <style>{`
         .screenplay-prosemirror {
           outline: none;
-          font-family: "DM Mono", monospace;
-          font-size: 12px;
-          line-height: 1.8;
+          font-family: "Courier Prime", "Courier New", Courier, monospace;
+          font-size: 12pt;
+          line-height: 1.5;
           color: #111;
           min-height: 100%;
           white-space: pre-wrap;
+          overflow-wrap: break-word;
+          word-break: break-word;
         }
         .screenplay-prosemirror p {
           margin: 0;
-          min-height: 1.8em;
+          min-height: 1.5em;
         }
         .screenplay-prosemirror p.is-editor-empty:first-child::before,
         .screenplay-prosemirror p.is-empty::before {
