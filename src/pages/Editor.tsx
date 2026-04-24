@@ -71,8 +71,8 @@ export default function Editor() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { plan } = useSubscription()
-  const { scripts, fetchScripts } = useScripts()
-  const { draft, loading, saveDraft, createNewDraft } = useDraft(
+  const { scripts, fetchScripts, deleteScript } = useScripts()
+  const { draft, loading, saveDraft, createNewDraft, deleteDraft } = useDraft(
     scriptId || null,
     draftNumber ? parseInt(draftNumber) : null
   )
@@ -212,6 +212,8 @@ export default function Editor() {
           currentDraftNumber={parseInt(draftNumber || '1')}
           onDraftSwitch={handleDraftSwitch}
           onNewDraft={handleNewDraft}
+          onDeleteDraft={deleteDraft}
+          onDeleteScript={deleteScript}
         />
       )}
 

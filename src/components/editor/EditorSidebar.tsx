@@ -10,14 +10,17 @@ interface Props {
   currentDraftNumber: number
   onDraftSwitch: (scriptId: string, draftNumber: number) => void
   onNewDraft: () => void
+  onDeleteDraft?: (draftId: string, scriptId: string) => Promise<{ error: Error | null }>
+  onDeleteScript?: (scriptId: string) => Promise<{ error: Error | null }>
 }
 
-export default function EditorSidebar({ scripts, currentScriptId, currentDraftNumber, onDraftSwitch, onNewDraft }: Props) {
+export default function EditorSidebar({ scripts, currentScriptId, currentDraftNumber, onDraftSwitch, onNewDraft, onDeleteDraft, onDeleteScript }: Props) {
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
   const [expandedScript, setExpandedScript] = useState<string | null>(currentScriptId)
   const [draftsByScript, setDraftsByScript] = useState<Record<string, Draft[]>>({})
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState<{ type: 'draft' | 'script'; id: string; scriptId?: string } | null>(null)
 
   const displayName = user?.email?.split('@')[0] || 'Writer'
   const initials = displayName.slice(0, 2).toUpperCase()
@@ -47,6 +50,32 @@ export default function EditorSidebar({ scripts, currentScriptId, currentDraftNu
       })
   }, [currentScriptId, currentDraftNumber])
 
+  const handleDeleteDraft = async () => {
+    if (!confirmDelete || !onDeleteDraft || confirmDelete.type !== 'draft' || !confirmDelete.scriptId) return
+    const { error } = await onDeleteDraft(confirmDelete.id, confirmDelete.scriptId)
+    if (!error) {
+      // Refresh drafts list
+      const { data } = await supabase
+        .from('drafts')
+        .select('id, draft_number, script_id, created_at')
+        .eq('script_id', confirmDelete.scriptId)
+        .order('draft_number', { ascending: true })
+      if (data) setDraftsByScript(prev => ({ ...prev, [confirmDelete.scriptId!]: data as Draft[] }))
+      // Navigate to draft 1 of this script
+      navigate(`/editor/${confirmDelete.scriptId}/1`)
+    }
+    setConfirmDelete(null)
+  }
+
+  const handleDeleteScript = async () => {
+    if (!confirmDelete || !onDeleteScript || confirmDelete.type !== 'script') return
+    const { error } = await onDeleteScript(confirmDelete.id)
+    if (!error) {
+      navigate('/dashboard')
+    }
+    setConfirmDelete(null)
+  }
+
   return (
     <div style={{ width: '224px', borderRight: '0.5px solid #e8e8e8', display: 'flex', flexDirection: 'column', height: '100%', background: '#fff' }}>
 
@@ -67,7 +96,7 @@ export default function EditorSidebar({ scripts, currentScriptId, currentDraftNu
                   ({script.draft_count})
                 </span>
               </div>
-              {/* FIX #3: + button to add new draft — only show for current script */}
+              {/* + button to add new draft — only show for current script */}
               {script.id === currentScriptId && (
                 <button
                   onClick={(e) => { e.stopPropagation(); onNewDraft() }}
@@ -77,31 +106,123 @@ export default function EditorSidebar({ scripts, currentScriptId, currentDraftNu
                   +
                 </button>
               )}
+              {/* Delete script button */}
+              {onDeleteScript && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setConfirmDelete({ type: 'script', id: script.id }) }}
+                  title="Delete Script"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ddd', fontSize: '11px', padding: '0 0 0 6px', lineHeight: 1, flexShrink: 0 }}
+                >
+                  ×
+                </button>
+              )}
             </div>
 
             {/* Drafts list */}
             {expandedScript === script.id && draftsByScript[script.id]?.map(d => (
               <div
                 key={d.id}
-                onClick={() => onDraftSwitch(script.id, d.draft_number)}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  padding: '4px 20px 4px 28px', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center',
+                  padding: '4px 20px 4px 28px',
                   fontSize: '11px', letterSpacing: '0.04em',
                   color: d.draft_number === currentDraftNumber && script.id === currentScriptId ? '#111' : '#999',
                   background: d.draft_number === currentDraftNumber && script.id === currentScriptId ? '#f4f4f4' : 'transparent'
                 }}
               >
-                <span style={{
-                  width: '4px', height: '4px', borderRadius: '50%', flexShrink: 0, display: 'inline-block',
-                  background: d.draft_number === currentDraftNumber && script.id === currentScriptId ? '#111' : '#ddd'
-                }} />
-                Draft {d.draft_number}
+                <div
+                  onClick={() => onDraftSwitch(script.id, d.draft_number)}
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                >
+                  <span style={{
+                    width: '4px', height: '4px', borderRadius: '50%', flexShrink: 0, display: 'inline-block',
+                    background: d.draft_number === currentDraftNumber && script.id === currentScriptId ? '#111' : '#ddd'
+                  }} />
+                  Draft {d.draft_number}
+                </div>
+                {/* Delete draft button — only show if more than 1 draft */}
+                {onDeleteDraft && draftsByScript[script.id] && draftsByScript[script.id].length > 1 && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setConfirmDelete({ type: 'draft', id: d.id, scriptId: script.id }) }}
+                    title="Delete Draft"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ddd', fontSize: '10px', padding: '0 4px', lineHeight: 1 }}
+                  >
+                    ×
+                  </button>
+                )}
               </div>
             ))}
           </div>
         ))}
       </div>
+
+      {/* Delete confirmation modal */}
+      {confirmDelete && (
+        <div style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(255,255,255,0.95)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 200,
+          padding: '24px'
+        }}>
+          <div style={{
+            fontFamily: '"DM Mono", monospace',
+            fontSize: '12px',
+            color: '#111',
+            letterSpacing: '0.04em',
+            marginBottom: '8px',
+            textAlign: 'center'
+          }}>
+            {confirmDelete.type === 'script' ? 'Delete this script?' : 'Delete this draft?'}
+          </div>
+          <div style={{
+            fontFamily: '"DM Mono", monospace',
+            fontSize: '10px',
+            color: '#999',
+            letterSpacing: '0.04em',
+            marginBottom: '24px',
+            textAlign: 'center'
+          }}>
+            {confirmDelete.type === 'script' ? 'All drafts will be permanently removed.' : 'This cannot be undone.'}
+          </div>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              onClick={() => setConfirmDelete(null)}
+              style={{
+                fontFamily: '"DM Mono", monospace',
+                fontSize: '10px',
+                letterSpacing: '0.1em',
+                padding: '8px 16px',
+                background: 'transparent',
+                color: '#999',
+                border: '0.5px solid #e8e8e8',
+                cursor: 'pointer'
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmDelete.type === 'script' ? handleDeleteScript : handleDeleteDraft}
+              style={{
+                fontFamily: '"DM Mono", monospace',
+                fontSize: '10px',
+                letterSpacing: '0.1em',
+                padding: '8px 16px',
+                background: '#dc2626',
+                color: '#fff',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* User panel */}
       <div style={{ borderTop: '0.5px solid #e8e8e8', position: 'relative' }}>

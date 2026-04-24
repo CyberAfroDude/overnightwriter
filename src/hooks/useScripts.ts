@@ -68,7 +68,16 @@ export function useScripts() {
     return { script: scriptData, draft: draftData, error: null }
   }
 
-  return { scripts, loading, fetchScripts, createScript }
+  const deleteScript = async (scriptId: string): Promise<{ error: Error | null }> => {
+    if (!user) return { error: new Error('Not authenticated') }
+    // Delete drafts first (FK constraint), then script
+    await supabase.from('drafts').delete().eq('script_id', scriptId)
+    const { error } = await supabase.from('scripts').delete().eq('id', scriptId)
+    if (!error) await fetchScripts()
+    return { error: error as Error | null }
+  }
+
+  return { scripts, loading, fetchScripts, createScript, deleteScript }
 }
 
 export function useDraft(scriptId: string | null, draftNumber: number | null) {
@@ -131,5 +140,39 @@ export function useDraft(scriptId: string | null, draftNumber: number | null) {
     return data
   }
 
-  return { draft, loading, saveDraft, getDraftsForScript, createNewDraft, refetch: fetchDraft }
+  const deleteDraft = async (draftId: string, scriptId: string): Promise<{ error: Error | null }> => {
+    // Get remaining drafts count after deletion
+    const { data: remaining } = await supabase
+      .from('drafts')
+      .select('draft_number')
+      .eq('script_id', scriptId)
+      .neq('id', draftId)
+      .order('draft_number', { ascending: true })
+
+    if (!remaining || remaining.length === 0) {
+      return { error: new Error('Cannot delete the last draft') }
+    }
+
+    const { error } = await supabase.from('drafts').delete().eq('id', draftId)
+    if (error) return { error: error as Error }
+
+    // Renumber remaining drafts sequentially
+    for (let i = 0; i < remaining.length; i++) {
+      await supabase
+        .from('drafts')
+        .update({ draft_number: i + 1 })
+        .eq('script_id', scriptId)
+        .eq('draft_number', remaining[i].draft_number)
+    }
+
+    // Update script draft_count
+    await supabase
+      .from('scripts')
+      .update({ draft_count: remaining.length, updated_at: new Date().toISOString() })
+      .eq('id', scriptId)
+
+    return { error: null }
+  }
+
+  return { draft, loading, saveDraft, getDraftsForScript, createNewDraft, deleteDraft, refetch: fetchDraft }
 }
