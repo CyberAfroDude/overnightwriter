@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react'
 import { DraftBlock, ElementType } from '../../types'
 import { useViewport } from '../../hooks/useViewport'
 import { v4 as uuidv4 } from 'uuid'
@@ -64,6 +64,7 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
   const blockRefs = useRef<Map<string, HTMLDivElement>>(new Map())
   const { isMobile } = useViewport()
   const elementStyles = ELEMENT_STYLES(isMobile)
+  const [pages, setPages] = useState<DraftBlock[][]>([blocks])
 
   // Track which block is currently being edited by the user
   // We skip React-controlled rendering for that block to avoid cursor jumps
@@ -262,16 +263,67 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
 
   const hasVisibleContent = (text: string) => text.replace(/\u200B/g, '').trim().length > 0
 
+  const paginateBlocks = useCallback(() => {
+    if (isMobile) {
+      setPages([blocks])
+      return
+    }
+
+    // Approximate printable content height inside an 11in screenplay page.
+    const pageContentHeightPx = 820
+    const nextPages: DraftBlock[][] = [[]]
+    let currentPage = 0
+    let usedHeight = 0
+
+    for (const block of blocks) {
+      const measuredHeight = blockRefs.current.get(block.id)?.offsetHeight ?? 24
+      const blockHeight = Math.max(measuredHeight, 24)
+
+      if (usedHeight + blockHeight > pageContentHeightPx && nextPages[currentPage].length > 0) {
+        currentPage += 1
+        nextPages.push([])
+        usedHeight = 0
+      }
+
+      nextPages[currentPage].push(block)
+      usedHeight += blockHeight
+    }
+
+    setPages(prev => {
+      const prevKey = prev.map(page => page.map(b => b.id).join('|')).join('||')
+      const nextKey = nextPages.map(page => page.map(b => b.id).join('|')).join('||')
+      return prevKey === nextKey ? prev : nextPages
+    })
+  }, [blocks, isMobile])
+
+  useLayoutEffect(() => {
+    paginateBlocks()
+  }, [paginateBlocks])
+
   return (
-    <div style={{
-      width: '100%',
-      maxWidth: '8.5in',
-      fontFamily: '"DM Mono", monospace',
-      fontSize: '12px',
-      lineHeight: '1.8',
-      color: '#111'
-    }}>
-      {blocks.map((block) => {
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
+      {pages.map((pageBlocks, pageIndex) => (
+        <div
+          key={`page-${pageIndex}`}
+          style={{
+            width: '100%',
+            maxWidth: '8.5in',
+            minHeight: '11in',
+            background: '#fff',
+            border: '0.5px solid #d0d0d0',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.04)',
+            padding: isMobile ? '16px' : '1in 1.5in',
+            boxSizing: 'border-box',
+            fontFamily: '"DM Mono", monospace',
+            fontSize: '12px',
+            lineHeight: '1.8',
+            color: '#111'
+          }}
+        >
+          <div style={{ textAlign: 'right', fontFamily: '"DM Mono", monospace', fontSize: '10px', color: '#ccc', marginBottom: '24px' }}>
+            {pageIndex + 1}.
+          </div>
+          {pageBlocks.map((block) => {
         const isEditing = editingRef.current === block.id
         const isEmpty = !hasVisibleContent(block.text)
         
@@ -356,6 +408,8 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
           </div>
         )
       })}
+        </div>
+      ))}
       <style>{`
         [contenteditable][data-has-content="false"]::before {
           content: attr(data-placeholder);

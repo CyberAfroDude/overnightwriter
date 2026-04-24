@@ -437,22 +437,13 @@ export default function Editor() {
               <div style={{ flex: 1, height: '0.5px', background: '#ddd' }} />
             </div>
 
-            {/* Screenplay page */}
-            <div style={{
-              width: '100%', maxWidth: '8.5in', minHeight: '11in',
-              background: '#fff',
-              border: '0.5px solid #d0d0d0',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.04)',
-              padding: pagePadding, boxSizing: 'border-box'
-            }}>
-              <div style={{ textAlign: 'right', fontFamily: '"DM Mono", monospace', fontSize: '10px', color: '#ccc', marginBottom: '24px' }}>1.</div>
-              <ScreenplayEditor
-                blocks={blocks}
-                onChange={setBlocks}
-                onElementChange={setCurrentElement}
-                onPaste={handlePaste}
-              />
-            </div>
+            {/* Screenplay pages */}
+            <ScreenplayEditor
+              blocks={blocks}
+              onChange={setBlocks}
+              onElementChange={setCurrentElement}
+              onPaste={handlePaste}
+            />
 
             <div style={{ height: '80px' }} />
           </div>
