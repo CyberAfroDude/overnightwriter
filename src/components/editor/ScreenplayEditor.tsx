@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useLayoutEffect } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { DraftBlock, ElementType } from '../../types'
 import { useViewport } from '../../hooks/useViewport'
 import { v4 as uuidv4 } from 'uuid'
@@ -62,48 +62,18 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
   const [showAutocomplete, setShowAutocomplete] = useState(false)
   const [autocompleteIndex, setAutocompleteIndex] = useState(0)
   const blockRefs = useRef<Map<string, HTMLDivElement>>(new Map())
-  const lastBlockIdsRef = useRef<string>('')
-  const mountedRef = useRef(false)
   const { isMobile } = useViewport()
   const elementStyles = ELEMENT_STYLES(isMobile)
+
+  // Track which block is currently being edited by the user
+  // We skip React-controlled rendering for that block to avoid cursor jumps
+  const editingRef = useRef<string | null>(null)
 
   // Extract unique character names from all blocks
   const characterNames = [...new Set(
     blocks.filter(b => b.type === 'character' && b.text.trim())
       .map(b => b.text.trim().toUpperCase())
   )].sort()
-
-  // CRITICAL FIX: Sync DOM to React state
-  // We need to handle THREE cases:
-  // 1. Initial mount: sync ALL blocks to DOM (blocks loaded from DB)
-  // 2. Blocks added/removed: sync only new blocks
-  // 3. Text changes: NEVER sync from state to DOM (user is typing)
-  const currentBlockIds = blocks.map(b => b.id).join(',')
-  useLayoutEffect(() => {
-    const isInitialMount = !mountedRef.current
-    const blockIdsChanged = lastBlockIdsRef.current !== currentBlockIds
-    
-    if (isInitialMount) {
-      mountedRef.current = true
-      // Initial mount: sync all blocks to DOM
-      blocks.forEach(block => {
-        const el = blockRefs.current.get(block.id)
-        if (el) {
-          el.textContent = block.text
-        }
-      })
-    } else if (blockIdsChanged) {
-      // Blocks added/removed: only sync blocks that don't match
-      blocks.forEach(block => {
-        const el = blockRefs.current.get(block.id)
-        if (el && el.textContent !== block.text) {
-          el.textContent = block.text
-        }
-      })
-    }
-    
-    lastBlockIdsRef.current = currentBlockIds
-  }, [currentBlockIds, blocks])
 
   const updateBlock = (id: string, text: string) => {
     onChange(blocks.map(b => b.id === id ? { ...b, text } : b))
@@ -179,7 +149,6 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
     } else if (e.key === 'Enter') {
       e.preventDefault()
       
-      // If character block and we have autocomplete showing, select it
       if (block.type === 'character' && showAutocomplete && characterNames.length > 0) {
         const selectedName = characterNames[autocompleteIndex]
         updateBlock(id, selectedName)
@@ -188,25 +157,21 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
         return
       }
       
-      // Character → Dialogue
       if (block.type === 'character') {
         addBlockAfter(id, 'dialogue')
         return
       }
       
-      // Dialogue → Character (first Enter), Action (second Enter on empty character)
       if (block.type === 'dialogue') {
         addBlockAfter(id, 'character')
         return
       }
       
-      // Parenthetical → Dialogue
       if (block.type === 'parenthetical') {
         addBlockAfter(id, 'dialogue')
         return
       }
       
-      // Default: add block with auto-detected type
       addBlockAfter(id)
     } else if (e.key === 'Backspace') {
       if (block.text === '' && blocks.length > 1) {
@@ -227,7 +192,6 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
   const handleInput = (id: string, text: string) => {
     updateBlock(id, text)
     
-    // Show autocomplete for character blocks
     const block = blocks.find(b => b.id === id)
     if (block?.type === 'character' && text.trim()) {
       const matches = characterNames.filter(name => 
@@ -243,9 +207,17 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
 
   const handleFocus = (id: string) => {
     setFocusedId(id)
+    editingRef.current = id
     const block = blocks.find(b => b.id === id)
     if (block) onElementChange(block.type)
     setShowAutocomplete(false)
+  }
+
+  const handleBlur = (id: string, text: string) => {
+    updateBlock(id, text)
+    if (editingRef.current === id) {
+      editingRef.current = null
+    }
   }
 
   const handleAutocompleteSelect = (blockId: string, name: string) => {
@@ -261,13 +233,11 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
     const text = e.clipboardData.getData('text/plain')
     if (!text) return
 
-    // If multi-line paste, use smart paste
     if (text.includes('\n') && onPaste) {
       const handled = onPaste(text)
       if (handled) return
     }
 
-    // Single line paste - insert at cursor position
     const block = blocks.find(b => b.id === blockId)
     if (!block) return
 
@@ -278,13 +248,11 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
       range.insertNode(document.createTextNode(text))
       range.collapse(false)
       
-      // Update block text
       const el = blockRefs.current.get(blockId)
       if (el) {
         updateBlock(blockId, el.textContent || '')
       }
     } else {
-      // Fallback: append text
       const newText = block.text + text
       const el = blockRefs.current.get(blockId)
       if (el) el.textContent = newText
@@ -301,80 +269,90 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
       lineHeight: '1.8',
       color: '#111'
     }}>
-      {blocks.map((block) => (
-        <div key={block.id} style={{ position: 'relative' }}>
-          <div
-            ref={el => {
-              if (el) {
-                blockRefs.current.set(block.id, el)
-              } else {
-                blockRefs.current.delete(block.id)
-              }
-            }}
-            contentEditable
-            suppressContentEditableWarning
-            onFocus={() => handleFocus(block.id)}
-            onBlur={e => updateBlock(block.id, e.currentTarget.textContent || '')}
-            onInput={e => handleInput(block.id, (e.target as HTMLDivElement).textContent || '')}
-            onKeyDown={e => handleKeyDown(e, block.id)}
-            onPaste={e => handlePaste(e, block.id)}
-            data-placeholder={block.type === 'scene-heading' ? 'INT./EXT. LOCATION — DAY/NIGHT' :
-              block.type === 'character' ? 'CHARACTER NAME' :
-              block.type === 'dialogue' ? 'Dialogue...' :
-              block.type === 'action' ? 'Action description...' :
-              block.type === 'parenthetical' ? '(beat)' :
-              'CUT TO:'}
-            style={{
-              outline: 'none',
-              minHeight: '1.8em',
-              color: block.ai_written ? '#2563eb' : '#111',
-              ...elementStyles[block.type],
-              position: 'relative'
-            }}
-          />
-          
-          {/* Character autocomplete dropdown */}
-          {block.type === 'character' && showAutocomplete && focusedId === block.id && characterNames.length > 0 && (
+      {blocks.map((block) => {
+        const isEditing = editingRef.current === block.id
+        const isEmpty = !block.text.trim()
+        
+        return (
+          <div key={block.id} style={{ position: 'relative' }}>
             <div
-              style={{
-                position: 'absolute',
-                top: '100%',
-                left: block.type === 'character' ? (isMobile ? '1in' : '2.2in') : '0',
-                zIndex: 100,
-                background: '#fff',
-                border: '0.5px solid #e8e8e8',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                minWidth: '150px',
-                maxWidth: '250px'
+              ref={el => {
+                if (el) {
+                  blockRefs.current.set(block.id, el)
+                  // CRITICAL FIX: On mount, always sync text to DOM
+                  // This ensures loaded content is visible immediately
+                  if (el.textContent !== block.text) {
+                    el.textContent = block.text
+                  }
+                } else {
+                  blockRefs.current.delete(block.id)
+                }
               }}
-            >
-              {characterNames
-                .filter(name => {
-                  const text = block.text.trim().toLowerCase()
-                  return name.toLowerCase().startsWith(text) && name.toLowerCase() !== text
-                })
-                .map((name, i) => (
-                  <div
-                    key={name}
-                    onClick={() => handleAutocompleteSelect(block.id, name)}
-                    style={{
-                      fontFamily: '"DM Mono", monospace',
-                      fontSize: '11px',
-                      padding: '6px 12px',
-                      cursor: 'pointer',
-                      background: i === autocompleteIndex ? '#f4f4f4' : '#fff',
-                      color: '#111',
-                      letterSpacing: '0.03em',
-                      borderBottom: '0.5px solid #f0f0f0'
-                    }}
-                  >
-                    {name}
-                  </div>
-                ))}
-            </div>
-          )}
-        </div>
-      ))}
+              contentEditable
+              suppressContentEditableWarning
+              onFocus={() => handleFocus(block.id)}
+              onBlur={e => handleBlur(block.id, e.currentTarget.textContent || '')}
+              onInput={e => handleInput(block.id, (e.target as HTMLDivElement).textContent || '')}
+              onKeyDown={e => handleKeyDown(e, block.id)}
+              onPaste={e => handlePaste(e, block.id)}
+              data-placeholder={block.type === 'scene-heading' ? 'INT./EXT. LOCATION — DAY/NIGHT' :
+                block.type === 'character' ? 'CHARACTER NAME' :
+                block.type === 'dialogue' ? 'Dialogue...' :
+                block.type === 'action' ? 'Action description...' :
+                block.type === 'parenthetical' ? '(beat)' :
+                'CUT TO:'}
+              style={{
+                outline: 'none',
+                minHeight: '1.8em',
+                color: block.ai_written ? '#2563eb' : '#111',
+                ...elementStyles[block.type],
+                position: 'relative'
+              }}
+            />
+            
+            {/* Character autocomplete dropdown */}
+            {block.type === 'character' && showAutocomplete && focusedId === block.id && characterNames.length > 0 && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: block.type === 'character' ? (isMobile ? '1in' : '2.2in') : '0',
+                  zIndex: 100,
+                  background: '#fff',
+                  border: '0.5px solid #e8e8e8',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                  minWidth: '150px',
+                  maxWidth: '250px'
+                }}
+              >
+                {characterNames
+                  .filter(name => {
+                    const text = block.text.trim().toLowerCase()
+                    return name.toLowerCase().startsWith(text) && name.toLowerCase() !== text
+                  })
+                  .map((name, i) => (
+                    <div
+                      key={name}
+                      onClick={() => handleAutocompleteSelect(block.id, name)}
+                      style={{
+                        fontFamily: '"DM Mono", monospace',
+                        fontSize: '11px',
+                        padding: '6px 12px',
+                        cursor: 'pointer',
+                        background: i === autocompleteIndex ? '#f4f4f4' : '#fff',
+                        color: '#111',
+                        letterSpacing: '0.03em',
+                        borderBottom: '0.5px solid #f0f0f0'
+                      }}
+                    >
+                      {name}
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+        )
+      })}
       <style>{`
         [contenteditable]:empty:before {
           content: attr(data-placeholder);
