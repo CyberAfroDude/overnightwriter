@@ -117,6 +117,7 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
 
     const newBlocks = [...blocks.slice(0, idx + 1), newBlock, ...blocks.slice(idx + 1)]
     onChange(newBlocks)
+    setActiveBlockId(newBlock.id)
 
     setTimeout(() => {
       const el = blockRefs.current.get(newBlock.id)
@@ -133,6 +134,7 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
     onChange(newBlocks)
     const prevIdx = Math.max(0, idx - 1)
     const prevId = newBlocks[prevIdx]?.id
+    if (prevId) setActiveBlockId(prevId)
     setTimeout(() => {
       const el = blockRefs.current.get(prevId)
       el?.focus()
@@ -368,9 +370,9 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
               ref={el => {
                 if (el) {
                   blockRefs.current.set(block.id, el)
-                  // CRITICAL FIX: On mount, always sync text to DOM
-                  // This ensures loaded content is visible immediately
-                  if (el.textContent !== block.text) {
+                  // Keep DOM text in sync, but never while user is actively editing this block.
+                  // This avoids caret jumps and click/enter instability.
+                  if (editingRef.current !== block.id && el.textContent !== block.text) {
                     el.textContent = block.text
                   }
                 } else {
