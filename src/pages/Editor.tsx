@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
+import { flushSync } from 'react-dom'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useScripts, useDraft } from '../hooks/useScripts'
 import { useAutosave } from '../hooks/useAutosave'
@@ -82,6 +83,8 @@ export default function Editor() {
 
   const [script, setScript] = useState<Script | null>(null)
   const [blocks, setBlocks] = useState<DraftBlock[]>([])
+  /** Bumped only when parent replaces blocks without TipTap driving (Layer 1: draft load, paste, AI append). */
+  const [contentEpoch, setContentEpoch] = useState(0)
   const [currentElement, setCurrentElement] = useState<ElementType>('scene-heading')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
@@ -106,24 +109,30 @@ export default function Editor() {
       .then(({ data }) => { if (data) setScript(data) })
   }, [scriptId])
 
-  // FIX #4: Only reset blocks when draft ID actually changes
+  // FIX #4: Only reset blocks when draft ID actually changes. useLayoutEffect + flushSync so child sees correct blocks before paint (Layer 1).
+  useLayoutEffect(() => {
+    if (!draft?.content) return
+    const normalized = normalizeDraftBlocks(draft.content)
+    flushSync(() => {
+      setBlocks(normalized)
+      setContentEpoch(e => e + 1)
+    })
+  }, [draft?.id])
+
   useEffect(() => {
-    if (draft?.content) {
-      setBlocks(normalizeDraftBlocks(draft.content))
-      // FIX #9: Scroll to bottom when opening a script
-      setTimeout(() => {
-        if (editorScrollRef.current) {
-          editorScrollRef.current.scrollTop = editorScrollRef.current.scrollHeight
-        }
-        // Also focus the last block
-        const normalized = normalizeDraftBlocks(draft.content)
-        const lastBlock = normalized[normalized.length - 1]
-        if (lastBlock) {
-          const event = new CustomEvent('focus-last-block', { detail: { blockId: lastBlock.id } })
-          window.dispatchEvent(event)
-        }
-      }, 100)
-    }
+    if (!draft?.content) return
+    // FIX #9: Scroll to bottom when opening a script
+    setTimeout(() => {
+      if (editorScrollRef.current) {
+        editorScrollRef.current.scrollTop = editorScrollRef.current.scrollHeight
+      }
+      const normalized = normalizeDraftBlocks(draft.content)
+      const lastBlock = normalized[normalized.length - 1]
+      if (lastBlock) {
+        const event = new CustomEvent('focus-last-block', { detail: { blockId: lastBlock.id } })
+        window.dispatchEvent(event)
+      }
+    }, 100)
   }, [draft?.id])
 
   const handleSave = useCallback(async (content: DraftBlock[]) => {
@@ -161,6 +170,7 @@ export default function Editor() {
 
   const handleBlocksGenerated = (newBlocks: DraftBlock[]) => {
     setBlocks(prev => [...prev, ...newBlocks])
+    setContentEpoch(e => e + 1)
   }
 
   // FIX #3: New draft only via dedicated button — guard against double-click
@@ -226,6 +236,7 @@ export default function Editor() {
     const parsed = parsePastedText(pastedText)
     if (parsed.length > 1) {
       setBlocks(normalizeDraftBlocks(parsed))
+      setContentEpoch(e => e + 1)
       return true
     }
     return false
@@ -414,6 +425,8 @@ export default function Editor() {
 
             {/* Screenplay pages */}
             <ScreenplayEditorV2
+              documentKey={draft.id}
+              contentEpoch={contentEpoch}
               blocks={blocks}
               onChange={setBlocks}
               onElementChange={setCurrentElement}

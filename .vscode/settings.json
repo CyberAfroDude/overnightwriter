@@ -1,0 +1,22 @@
+{
+    "workbench.editor.autoLockGroups": {
+        "default": true,
+        "workbench.editor.browserEditor": true,
+        "workbench.editorinputs.searchEditorInput": true,
+        "repl": true,
+        "workbench.editor.markdownPlan": true,
+        "imagePreview.previewEditor": true,
+        "workbench.editor.markdown": true,
+        "vscode.audioPreview": true,
+        "vscode.videoPreview": true,
+        "jsProfileVisualizer.cpuprofile.table": true,
+        "jsProfileVisualizer.heapprofile.table": true,
+        "jsProfileVisualizer.heapsnapshot.table": true,
+        "workbench.editor.reviewchanges.input": true,
+        "workbench.editor.cursorfileblame": true,
+        "workbench.editor.cursorblame": true,
+        "workbench.input.interactive": true,
+        "mainThreadWebview-markdown.preview": true,
+        "jupyter-notebook": true
+    }
+}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { Node, mergeAttributes } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
@@ -9,6 +9,10 @@ import { docToDraftBlocks, draftBlocksToDoc } from '../../lib/editor/screenplayD
 import { defaultNextType, ELEMENT_CYCLE, ELEMENT_PLACEHOLDERS } from './screenplayModel'
 
 interface Props {
+  /** Stable per draft; full editor hydrate only when this or `contentEpoch` changes (Layer 1). */
+  documentKey: string
+  /** Bump when parent replaces `blocks` without the editor being the source (draft load, paste, AI append). */
+  contentEpoch: number
   blocks: DraftBlock[]
   onChange: (blocks: DraftBlock[]) => void
   onElementChange: (type: ElementType) => void
@@ -74,7 +78,14 @@ const ScreenplayBlock = Node.create({
   }
 })
 
-export default function ScreenplayEditorV2({ blocks, onChange, onElementChange, onPaste }: Props) {
+export default function ScreenplayEditorV2({
+  documentKey,
+  contentEpoch,
+  blocks,
+  onChange,
+  onElementChange,
+  onPaste
+}: Props) {
   const { isMobile } = useViewport()
   const [pages, setPages] = useState(1)
   const [autocompleteItems, setAutocompleteItems] = useState<string[]>([])
@@ -82,6 +93,7 @@ export default function ScreenplayEditorV2({ blocks, onChange, onElementChange, 
   const [autocompletePos, setAutocompletePos] = useState<{ top: number; left: number } | null>(null)
   const hostRef = useRef<HTMLDivElement>(null)
   const ignoreUpdateRef = useRef(false)
+  const lastHydrationRef = useRef<{ key: string; epoch: number } | null>(null)
   const characterNames = useMemo(
     () => [...new Set(blocks.filter(b => b.type === 'character' && b.text.trim()).map(b => b.text.trim().toUpperCase()))].sort(),
     [blocks]
@@ -148,16 +160,16 @@ export default function ScreenplayEditorV2({ blocks, onChange, onElementChange, 
     }
   })
 
-  useEffect(() => {
+  // Layer 1: never replace the ProseMirror doc from every `blocks` update — only on draft identity or explicit parent epoch.
+  useLayoutEffect(() => {
     if (!editor) return
-    const current = JSON.stringify(editor.getJSON())
-    const incoming = JSON.stringify(draftBlocksToDoc(blocks))
-    if (current !== incoming) {
-      ignoreUpdateRef.current = true
-      editor.commands.setContent(draftBlocksToDoc(blocks), { emitUpdate: false })
-      ignoreUpdateRef.current = false
-    }
-  }, [blocks, editor])
+    const prev = lastHydrationRef.current
+    if (prev && prev.key === documentKey && prev.epoch === contentEpoch) return
+    lastHydrationRef.current = { key: documentKey, epoch: contentEpoch }
+    ignoreUpdateRef.current = true
+    editor.commands.setContent(draftBlocksToDoc(blocks), { emitUpdate: false })
+    ignoreUpdateRef.current = false
+  }, [documentKey, contentEpoch, blocks, editor])
 
   useEffect(() => {
     if (!editor || !hostRef.current) return
