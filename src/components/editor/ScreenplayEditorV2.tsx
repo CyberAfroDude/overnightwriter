@@ -18,6 +18,7 @@ interface Props {
 const SCREENPLAY_BLOCK = 'screenplayBlock'
 const PAGE_HEIGHT = 1056
 const PAGE_GAP = 24
+const PAGE_VERTICAL_PADDING = 192 // 1in top + 1in bottom at 96dpi
 
 const ScreenplayBlock = Node.create({
   name: SCREENPLAY_BLOCK,
@@ -66,9 +67,8 @@ const ScreenplayBlock = Node.create({
           screenplayType: next,
           aiWritten: false
         }
-        const split = this.editor.commands.splitBlock()
-        if (!split) return false
-        return this.editor.commands.updateAttributes(SCREENPLAY_BLOCK, nextAttrs)
+        if (!this.editor.commands.splitBlock()) return false
+        return this.editor.commands.setNode(SCREENPLAY_BLOCK, nextAttrs)
       }
     }
   }
@@ -163,13 +163,15 @@ export default function ScreenplayEditorV2({ blocks, onChange, onElementChange, 
     if (!editor || !hostRef.current) return
     const updatePages = () => {
       const contentHeight = editor.view.dom.scrollHeight
-      setPages(Math.max(1, Math.ceil(contentHeight / PAGE_HEIGHT)))
+      // Include fixed top/bottom screenplay margins so final lines do not spill into page-end UI.
+      const totalHeight = isMobile ? contentHeight : contentHeight + PAGE_VERTICAL_PADDING
+      setPages(Math.max(1, Math.ceil(totalHeight / PAGE_HEIGHT)))
     }
     updatePages()
     const observer = new ResizeObserver(updatePages)
     observer.observe(editor.view.dom)
     return () => observer.disconnect()
-  }, [editor])
+  }, [editor, isMobile])
 
   if (!editor) return null
 
