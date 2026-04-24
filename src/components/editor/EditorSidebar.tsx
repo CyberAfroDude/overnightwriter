@@ -225,9 +225,9 @@ export default function EditorSidebar({ scripts, currentScriptId, currentDraftNu
       )}
 
       {/* User panel */}
-      <div style={{ borderTop: '0.5px solid #e8e8e8', position: 'relative' }}>
+      <div style={{ borderTop: '0.5px solid #e8e8e8', position: 'relative', paddingBottom: '60px' }}>
         {settingsOpen && (
-          <div style={{ position: 'absolute', bottom: '64px', left: '12px', right: '12px', background: '#fff', border: '0.5px solid #e5e5e5', zIndex: 100 }}>
+          <div style={{ position: 'absolute', bottom: '124px', left: '12px', right: '12px', background: '#fff', border: '0.5px solid #e5e5e5', zIndex: 200, boxShadow: '0 -4px 12px rgba(0,0,0,0.08)' }}>
             <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '11px', padding: '10px 16px', color: '#666', cursor: 'pointer', letterSpacing: '0.04em' }} onClick={() => navigate('/settings')}>Settings</div>
             <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '11px', padding: '10px 16px', color: '#666', cursor: 'pointer', letterSpacing: '0.04em' }} onClick={() => navigate('/api-keys')}>API Keys</div>
             <div style={{ height: '0.5px', background: '#e8e8e8' }} />

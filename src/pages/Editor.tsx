@@ -72,7 +72,7 @@ export default function Editor() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { plan } = useSubscription()
-  const { scripts, fetchScripts, deleteScript } = useScripts()
+  const { scripts, fetchScripts, deleteScript, createScript } = useScripts()
   const { draft, loading, saveDraft, createNewDraft, deleteDraft } = useDraft(
     scriptId || null,
     draftNumber ? parseInt(draftNumber) : null
@@ -88,6 +88,8 @@ export default function Editor() {
   const [generateOpen, setGenerateOpen] = useState(false)
   const [pricingOpen, setPricingOpen] = useState(false)
   const [showScenePanel, setShowScenePanel] = useState(false)
+  const [showNewScriptModal, setShowNewScriptModal] = useState(false)
+  const [newScriptTitle, setNewScriptTitle] = useState('')
   const isSwitchingRef = useRef(false)
   const { isMobile } = useViewport()
 
@@ -156,6 +158,22 @@ export default function Editor() {
     setTimeout(() => { creatingDraftRef.current = false }, 1000)
   }
 
+  // + Script flow
+  const handleNewScript = async () => {
+    if (!newScriptTitle.trim()) return
+    const { script: newScript, draft: newDraft, error } = await createScript(
+      newScriptTitle.trim(),
+      [{ name: user?.email?.split('@')[0] || 'Writer', credit: 'Screenplay By' }],
+      user?.email || '',
+      ''
+    )
+    if (!error && newScript && newDraft) {
+      setShowNewScriptModal(false)
+      setNewScriptTitle('')
+      navigate(`/editor/${newScript.id}/${newDraft.draft_number}`)
+    }
+  }
+
   const handleExport = async (format: string) => {
     if (!script || !draft) return
     const currentDraft = { ...draft, content: blocks }
@@ -199,7 +217,7 @@ export default function Editor() {
 
   const iconBtnStyle: React.CSSProperties = {
     background: 'transparent', border: 'none', cursor: 'pointer',
-    padding: '5px 7px', color: '#999', display: 'flex', alignItems: 'center',
+    padding: '5px 7px', color: '#111', display: 'flex', alignItems: 'center',
     justifyContent: 'center', position: 'relative' as const
   }
 
@@ -277,10 +295,10 @@ export default function Editor() {
             {/* Floppy save */}
             <button onClick={handleManualSave} style={iconBtnStyle} title="Save"><FloppyIcon /></button>
 
-            {/* FIX #3: Explicit new draft button */}
+            {/* + Script button */}
             {!isMobile && (
-              <button onClick={handleNewDraft} style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#aaa', padding: '5px 8px' }} title="New Draft">
-                + Draft
+              <button onClick={() => setShowNewScriptModal(true)} style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: '0.5px solid #111' }} title="New Script">
+                + Script
               </button>
             )}
 
@@ -299,7 +317,7 @@ export default function Editor() {
             <button
               onClick={() => setGenerateOpen(prev => !prev)}
               title="AI Write (Cmd+G)"
-              style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: generateOpen ? '#fff' : '#888', background: generateOpen ? '#111' : 'transparent', border: '0.5px solid', borderColor: generateOpen ? '#111' : '#e8e8e8', padding: '4px 10px', gap: '4px' }}
+              style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: generateOpen ? '#fff' : '#111', background: generateOpen ? '#111' : 'transparent', border: '0.5px solid', borderColor: generateOpen ? '#111' : '#111', padding: '4px 10px', gap: '4px' }}
             >
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                 <path d="M5 1L6.2 3.8L9 4.5L6.8 6.8L7.3 9.5L5 8.1L2.7 9.5L3.2 6.8L1 4.5L3.8 3.8L5 1Z" stroke="currentColor" strokeWidth="0.8" fill="none"/>
@@ -337,15 +355,31 @@ export default function Editor() {
           <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 24px', background: '#fff', paddingBottom: `${adHeight + 40}px` }}>
 
             {/* Title page */}
-            <TitlePage script={script} />
+            <div style={{
+              width: '100%', maxWidth: '8.5in',
+              background: '#fff',
+              border: '0.5px solid #d0d0d0',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.04)',
+              marginBottom: '24px'
+            }}>
+              <TitlePage script={script} />
+            </div>
 
             {/* Page break between title page and script */}
-            <div style={{ width: '100%', maxWidth: '8.5in', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ width: '100%', height: '1px', background: '#e8e8e8' }} />
+            <div style={{ width: '100%', maxWidth: '8.5in', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '24px' }}>
+              <div style={{ flex: 1, height: '0.5px', background: '#ddd' }} />
+              <span style={{ fontFamily: '"DM Mono", monospace', fontSize: '9px', color: '#ccc', letterSpacing: '0.15em' }}>PAGE 1</span>
+              <div style={{ flex: 1, height: '0.5px', background: '#ddd' }} />
             </div>
 
             {/* Screenplay page */}
-            <div style={{ width: '100%', maxWidth: '8.5in', minHeight: '11in', background: '#fff', border: isMobile ? 'none' : '0.5px solid #e8e8e8', borderTop: 'none', padding: pagePadding, boxSizing: 'border-box' }}>
+            <div style={{
+              width: '100%', maxWidth: '8.5in', minHeight: '11in',
+              background: '#fff',
+              border: '0.5px solid #d0d0d0',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.04)',
+              padding: pagePadding, boxSizing: 'border-box'
+            }}>
               <div style={{ textAlign: 'right', fontFamily: '"DM Mono", monospace', fontSize: '10px', color: '#ccc', marginBottom: '24px' }}>1.</div>
               <ScreenplayEditor
                 blocks={blocks}
@@ -398,6 +432,67 @@ export default function Editor() {
         onOpenPricing={() => { setGenerateOpen(false); setPricingOpen(true) }}
         bottomOffset={adHeight}
       />
+
+      {/* New Script Modal */}
+      {showNewScriptModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(255,255,255,0.95)', zIndex: 300,
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{
+            background: '#fff', border: '0.5px solid #e8e8e8',
+            padding: '40px', maxWidth: '400px', width: '90%'
+          }}>
+            <div style={{
+              fontFamily: '"EB Garamond", serif', fontSize: '18px',
+              color: '#111', marginBottom: '24px', letterSpacing: '0.04em'
+            }}>
+              New Script
+            </div>
+            <input
+              type="text"
+              placeholder="Script title..."
+              value={newScriptTitle}
+              onChange={e => setNewScriptTitle(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleNewScript() }}
+              autoFocus
+              style={{
+                fontFamily: '"DM Mono", monospace', fontSize: '13px',
+                width: '100%', padding: '10px 0', border: 'none',
+                borderBottom: '0.5px solid #ccc', outline: 'none',
+                background: 'transparent', color: '#111', marginBottom: '24px'
+              }}
+            />
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => { setShowNewScriptModal(false); setNewScriptTitle('') }}
+                style={{
+                  fontFamily: '"DM Mono", monospace', fontSize: '10px',
+                  letterSpacing: '0.1em', padding: '8px 16px',
+                  background: 'transparent', color: '#999',
+                  border: '0.5px solid #e8e8e8', cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleNewScript}
+                disabled={!newScriptTitle.trim()}
+                style={{
+                  fontFamily: '"DM Mono", monospace', fontSize: '10px',
+                  letterSpacing: '0.1em', padding: '8px 16px',
+                  background: '#111', color: '#fff',
+                  border: 'none', cursor: newScriptTitle.trim() ? 'pointer' : 'not-allowed',
+                  opacity: newScriptTitle.trim() ? 1 : 0.5
+                }}
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <PricingModal isOpen={pricingOpen} onClose={() => setPricingOpen(false)} highlightPlan="writer" />
     </div>

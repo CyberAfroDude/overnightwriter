@@ -54,7 +54,7 @@ export default function AdBanner() {
     <div style={{
       position: 'fixed',
       bottom: 0,
-      left: 0,
+      left: '224px',
       right: 0,
       height: '60px',
       background: '#fafafa',

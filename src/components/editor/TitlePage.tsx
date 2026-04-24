@@ -12,11 +12,8 @@ export default function TitlePage({ script }: Props) {
   return (
     <div style={{
       width: '100%',
-      maxWidth: '8.5in',
       minHeight: '11in',
       background: '#fff',
-      border: '0.5px solid #e8e8e8',
-      borderBottom: 'none',
       padding: '1in 1.5in 1in 1.5in',
       fontFamily: '"DM Mono", monospace',
       display: 'flex',

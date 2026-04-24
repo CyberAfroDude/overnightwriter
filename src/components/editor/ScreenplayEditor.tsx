@@ -59,9 +59,18 @@ interface Props {
 
 export default function ScreenplayEditor({ blocks, onChange, onElementChange, onPaste }: Props) {
   const [focusedId, setFocusedId] = useState<string | null>(null)
+  const [showAutocomplete, setShowAutocomplete] = useState(false)
+  const [autocompleteIndex, setAutocompleteIndex] = useState(0)
   const blockRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const autocompleteRef = useRef<HTMLDivElement>(null)
   const { isMobile } = useViewport()
   const elementStyles = ELEMENT_STYLES(isMobile)
+
+  // Extract unique character names from all blocks
+  const characterNames = [...new Set(
+    blocks.filter(b => b.type === 'character' && b.text.trim())
+      .map(b => b.text.trim().toUpperCase())
+  )].sort()
 
   const getFocusedBlock = () => blocks.find(b => b.id === focusedId)
 
@@ -79,16 +88,21 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
     onElementChange(nextType)
   }, [blocks, onChange, onElementChange])
 
-  const addBlockAfter = useCallback((id: string) => {
+  const addBlockAfter = useCallback((id: string, forceType?: ElementType) => {
     const idx = blocks.findIndex(b => b.id === id)
     if (idx === -1) return
 
     const currentBlock = blocks[idx]
-    let nextType: ElementType = 'action'
-    if (currentBlock.type === 'character') nextType = 'dialogue'
-    else if (currentBlock.type === 'dialogue') nextType = 'character'
-    else if (currentBlock.type === 'parenthetical') nextType = 'dialogue'
-    else if (currentBlock.type === 'scene-heading') nextType = 'action'
+    let nextType: ElementType = forceType || 'action'
+    
+    if (!forceType) {
+      if (currentBlock.type === 'character') nextType = 'dialogue'
+      else if (currentBlock.type === 'dialogue') nextType = 'character'
+      else if (currentBlock.type === 'parenthetical') nextType = 'dialogue'
+      else if (currentBlock.type === 'scene-heading') nextType = 'action'
+      else if (currentBlock.type === 'action') nextType = 'action'
+      else if (currentBlock.type === 'transition') nextType = 'scene-heading'
+    }
 
     const newBlock: DraftBlock = {
       id: uuidv4(),
@@ -125,18 +139,90 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
   }, [blocks, onChange, onElementChange])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, id: string) => {
+    const block = blocks.find(b => b.id === id)
+    if (!block) return
+
     if (e.key === 'Tab') {
       e.preventDefault()
       cycleElement(id)
     } else if (e.key === 'Enter') {
       e.preventDefault()
+      
+      // If character block and we have autocomplete showing, select it
+      if (block.type === 'character' && showAutocomplete && characterNames.length > 0) {
+        const selectedName = characterNames[autocompleteIndex]
+        updateBlock(id, selectedName)
+        setShowAutocomplete(false)
+        // Move to dialogue
+        addBlockAfter(id, 'dialogue')
+        return
+      }
+      
+      // Character → Dialogue
+      if (block.type === 'character') {
+        addBlockAfter(id, 'dialogue')
+        return
+      }
+      
+      // Dialogue → Character (first Enter), Action (second Enter on empty character)
+      if (block.type === 'dialogue') {
+        // Check if next block exists and is empty character
+        const idx = blocks.findIndex(b => b.id === id)
+        const nextBlock = blocks[idx + 1]
+        if (nextBlock && nextBlock.type === 'character' && !nextBlock.text.trim()) {
+          // Change empty character to action
+          const updated = blocks.map(b => b.id === nextBlock.id ? { ...b, type: 'action' as ElementType } : b)
+          onChange(updated)
+          setTimeout(() => {
+            const el = blockRefs.current.get(nextBlock.id)
+            el?.focus()
+            setFocusedId(nextBlock.id)
+            onElementChange('action')
+          }, 10)
+        } else {
+          addBlockAfter(id, 'character')
+        }
+        return
+      }
+      
+      // Parenthetical → Dialogue
+      if (block.type === 'parenthetical') {
+        addBlockAfter(id, 'dialogue')
+        return
+      }
+      
+      // Default: add block with auto-detected type
       addBlockAfter(id)
     } else if (e.key === 'Backspace') {
-      const block = blocks.find(b => b.id === id)
-      if (block?.text === '' && blocks.length > 1) {
+      if (block.text === '' && blocks.length > 1) {
         e.preventDefault()
         deleteBlock(id)
       }
+    } else if (e.key === 'ArrowDown' && showAutocomplete) {
+      e.preventDefault()
+      setAutocompleteIndex(prev => (prev + 1) % characterNames.length)
+    } else if (e.key === 'ArrowUp' && showAutocomplete) {
+      e.preventDefault()
+      setAutocompleteIndex(prev => (prev - 1 + characterNames.length) % characterNames.length)
+    } else if (e.key === 'Escape' && showAutocomplete) {
+      setShowAutocomplete(false)
+    }
+  }
+
+  const handleInput = (id: string, text: string) => {
+    updateBlock(id, text)
+    
+    // Show autocomplete for character blocks
+    const block = blocks.find(b => b.id === id)
+    if (block?.type === 'character' && text.trim()) {
+      const matches = characterNames.filter(name => 
+        name.toLowerCase().startsWith(text.trim().toLowerCase()) && 
+        name.toLowerCase() !== text.trim().toLowerCase()
+      )
+      setShowAutocomplete(matches.length > 0)
+      setAutocompleteIndex(0)
+    } else {
+      setShowAutocomplete(false)
     }
   }
 
@@ -144,6 +230,47 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
     setFocusedId(id)
     const block = blocks.find(b => b.id === id)
     if (block) onElementChange(block.type)
+    setShowAutocomplete(false)
+  }
+
+  const handleAutocompleteSelect = (blockId: string, name: string) => {
+    updateBlock(blockId, name)
+    setShowAutocomplete(false)
+    // Move to dialogue
+    addBlockAfter(blockId, 'dialogue')
+  }
+
+  const handlePaste = (e: React.ClipboardEvent, blockId: string) => {
+    e.preventDefault()
+    const text = e.clipboardData.getData('text/plain')
+    if (!text) return
+
+    // If multi-line paste, use smart paste
+    if (text.includes('\n') && onPaste) {
+      const handled = onPaste(text)
+      if (handled) return
+    }
+
+    // Single line paste - insert at cursor position
+    const block = blocks.find(b => b.id === blockId)
+    if (!block) return
+
+    const selection = window.getSelection()
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0)
+      range.deleteContents()
+      range.insertNode(document.createTextNode(text))
+      range.collapse(false)
+      
+      // Update block text
+      const el = blockRefs.current.get(blockId)
+      if (el) {
+        updateBlock(blockId, el.textContent || '')
+      }
+    } else {
+      // Fallback: append text
+      updateBlock(blockId, block.text + text)
+    }
   }
 
   return (
@@ -153,43 +280,82 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
       fontFamily: '"DM Mono", monospace',
       fontSize: '12px',
       lineHeight: '1.8',
-      color: '#111'
+      color: '#111',
+      userSelect: 'text'
     }}>
-      {blocks.map((block) => (
-        <div
-          key={block.id}
-          ref={el => {
-            if (el) blockRefs.current.set(block.id, el)
-            else blockRefs.current.delete(block.id)
-          }}
-          contentEditable
-          suppressContentEditableWarning
-          onFocus={() => handleFocus(block.id)}
-          onBlur={e => updateBlock(block.id, e.currentTarget.textContent || '')}
-          onInput={e => updateBlock(block.id, (e.target as HTMLDivElement).textContent || '')}
-          onKeyDown={e => handleKeyDown(e, block.id)}
-          onPaste={e => {
-            if (!onPaste) return
-            const text = e.clipboardData.getData('text/plain')
-            if (text && text.split('\n').length > 2) {
-              e.preventDefault()
-              onPaste(text)
-            }
-          }}
-          data-placeholder={block.type === 'scene-heading' ? 'INT./EXT. LOCATION — DAY/NIGHT' :
-            block.type === 'character' ? 'CHARACTER NAME' :
-            block.type === 'dialogue' ? 'Dialogue...' :
-            block.type === 'action' ? 'Action description...' :
-            block.type === 'parenthetical' ? '(beat)' :
-            'CUT TO:'}
-          style={{
-            outline: 'none',
-            minHeight: '1.8em',
-            color: block.ai_written ? '#2563eb' : '#111',
-            ...elementStyles[block.type],
-            position: 'relative'
-          }}
-        />
+      {blocks.map((block, index) => (
+        <div key={block.id} style={{ position: 'relative' }}>
+          <div
+            ref={el => {
+              if (el) blockRefs.current.set(block.id, el)
+              else blockRefs.current.delete(block.id)
+            }}
+            contentEditable
+            suppressContentEditableWarning
+            onFocus={() => handleFocus(block.id)}
+            onBlur={e => updateBlock(block.id, e.currentTarget.textContent || '')}
+            onInput={e => handleInput(block.id, (e.target as HTMLDivElement).textContent || '')}
+            onKeyDown={e => handleKeyDown(e, block.id)}
+            onPaste={e => handlePaste(e, block.id)}
+            data-placeholder={block.type === 'scene-heading' ? 'INT./EXT. LOCATION — DAY/NIGHT' :
+              block.type === 'character' ? 'CHARACTER NAME' :
+              block.type === 'dialogue' ? 'Dialogue...' :
+              block.type === 'action' ? 'Action description...' :
+              block.type === 'parenthetical' ? '(beat)' :
+              'CUT TO:'}
+            style={{
+              outline: 'none',
+              minHeight: '1.8em',
+              color: block.ai_written ? '#2563eb' : '#111',
+              ...elementStyles[block.type],
+              position: 'relative',
+              userSelect: 'text',
+              cursor: 'text'
+            }}
+          />
+          
+          {/* Character autocomplete dropdown */}
+          {block.type === 'character' && showAutocomplete && focusedId === block.id && characterNames.length > 0 && (
+            <div
+              ref={autocompleteRef}
+              style={{
+                position: 'absolute',
+                top: '100%',
+                left: block.type === 'character' ? (isMobile ? '1in' : '2.2in') : '0',
+                zIndex: 100,
+                background: '#fff',
+                border: '0.5px solid #e8e8e8',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                minWidth: '150px',
+                maxWidth: '250px'
+              }}
+            >
+              {characterNames
+                .filter(name => {
+                  const text = block.text.trim().toLowerCase()
+                  return name.toLowerCase().startsWith(text) && name.toLowerCase() !== text
+                })
+                .map((name, i) => (
+                  <div
+                    key={name}
+                    onClick={() => handleAutocompleteSelect(block.id, name)}
+                    style={{
+                      fontFamily: '"DM Mono", monospace',
+                      fontSize: '11px',
+                      padding: '6px 12px',
+                      cursor: 'pointer',
+                      background: i === autocompleteIndex ? '#f4f4f4' : '#fff',
+                      color: '#111',
+                      letterSpacing: '0.03em',
+                      borderBottom: '0.5px solid #f0f0f0'
+                    }}
+                  >
+                    {name}
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
       ))}
       <style>{`
         [contenteditable]:empty:before {
