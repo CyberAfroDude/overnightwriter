@@ -63,6 +63,7 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
   const [autocompleteIndex, setAutocompleteIndex] = useState(0)
   const blockRefs = useRef<Map<string, HTMLDivElement>>(new Map())
   const lastBlockIdsRef = useRef<string>('')
+  const mountedRef = useRef(false)
   const { isMobile } = useViewport()
   const elementStyles = ELEMENT_STYLES(isMobile)
 
@@ -72,19 +73,36 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
       .map(b => b.text.trim().toUpperCase())
   )].sort()
 
-  // CRITICAL FIX #8: Sync DOM to state ONLY when block IDs change (new blocks added/removed)
-  // NOT on every text change. This prevents the invisible text bug.
+  // CRITICAL FIX: Sync DOM to React state
+  // We need to handle THREE cases:
+  // 1. Initial mount: sync ALL blocks to DOM (blocks loaded from DB)
+  // 2. Blocks added/removed: sync only new blocks
+  // 3. Text changes: NEVER sync from state to DOM (user is typing)
   const currentBlockIds = blocks.map(b => b.id).join(',')
   useLayoutEffect(() => {
-    if (lastBlockIdsRef.current === currentBlockIds) return
-    lastBlockIdsRef.current = currentBlockIds
+    const isInitialMount = !mountedRef.current
+    const blockIdsChanged = lastBlockIdsRef.current !== currentBlockIds
     
-    blocks.forEach(block => {
-      const el = blockRefs.current.get(block.id)
-      if (el && el.textContent !== block.text) {
-        el.textContent = block.text
-      }
-    })
+    if (isInitialMount) {
+      mountedRef.current = true
+      // Initial mount: sync all blocks to DOM
+      blocks.forEach(block => {
+        const el = blockRefs.current.get(block.id)
+        if (el) {
+          el.textContent = block.text
+        }
+      })
+    } else if (blockIdsChanged) {
+      // Blocks added/removed: only sync blocks that don't match
+      blocks.forEach(block => {
+        const el = blockRefs.current.get(block.id)
+        if (el && el.textContent !== block.text) {
+          el.textContent = block.text
+        }
+      })
+    }
+    
+    lastBlockIdsRef.current = currentBlockIds
   }, [currentBlockIds, blocks])
 
   const updateBlock = (id: string, text: string) => {
@@ -289,8 +307,6 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
             ref={el => {
               if (el) {
                 blockRefs.current.set(block.id, el)
-                // Only set textContent on initial mount, not on every render
-                // The useLayoutEffect above handles sync when blocks change
               } else {
                 blockRefs.current.delete(block.id)
               }

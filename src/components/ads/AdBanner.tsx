@@ -65,36 +65,39 @@ export default function AdBanner() {
       zIndex: 50,
       overflow: 'hidden'
     }}>
-      {/* AdSense unit */}
-      <div ref={adRef} style={{ width: '100%', maxWidth: '728px', height: '60px' }}>
-        <ins
-          className="adsbygoogle"
-          style={{ display: 'block', width: '100%', height: '60px' }}
-          data-ad-client={ADSENSE_CONFIG.publisherId}
-          data-ad-slot={ADSENSE_CONFIG.adUnitId}
-          data-ad-format="horizontal"
-          data-full-width-responsive="false"
-        />
-      </div>
+      {/* Ad container — matches page width (8.5in = 816px) */}
+      <div style={{ width: '100%', maxWidth: '816px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        {/* AdSense unit */}
+        <div ref={adRef} style={{ width: '100%', maxWidth: '728px', height: '60px' }}>
+          <ins
+            className="adsbygoogle"
+            style={{ display: 'block', width: '100%', height: '60px' }}
+            data-ad-client={ADSENSE_CONFIG.publisherId}
+            data-ad-slot={ADSENSE_CONFIG.adUnitId}
+            data-ad-format="horizontal"
+            data-full-width-responsive="false"
+          />
+        </div>
 
-      {/* Remove ads nudge */}
-      <div style={{
-        position: 'absolute',
-        right: '12px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '6px'
-      }}>
-        <span style={{
-          fontFamily: '"DM Mono", monospace',
-          fontSize: '9px',
-          letterSpacing: '0.08em',
-          color: '#ccc'
+        {/* Remove ads nudge */}
+        <div style={{
+          position: 'absolute',
+          right: '0',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px'
         }}>
-          ad
-        </span>
+          <span style={{
+            fontFamily: '"DM Mono", monospace',
+            fontSize: '9px',
+            letterSpacing: '0.08em',
+            color: '#ccc'
+          }}>
+            ad
+          </span>
+        </div>
       </div>
     </div>
   )

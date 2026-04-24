@@ -214,6 +214,9 @@ export default function Settings() {
         <div style={sectionStyle}>
           <label style={labelStyle}>Manage Subscription</label>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <button onClick={() => setPricingOpen(true)} style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.1em', padding: '10px 20px', background: '#111', color: '#fff', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+              View Plans & Pricing →
+            </button>
             {plan !== 'free' && (
               <button onClick={async () => {
                 const res = await fetch('/api/stripe/portal', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: user?.id, returnUrl: window.location.href }) })
@@ -223,29 +226,7 @@ export default function Settings() {
                 Cancel or Downgrade Plan →
               </button>
             )}
-            <button onClick={() => setShowDeleteConfirm(true)} style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.1em', padding: '10px 20px', background: 'transparent', color: '#dc2626', border: '0.5px solid #fca5a5', cursor: 'pointer', textAlign: 'left' }}>
-              Delete Account
-            </button>
           </div>
-
-          {showDeleteConfirm && (
-            <div style={{ marginTop: '16px', padding: '16px', border: '0.5px solid #fca5a5', background: '#fef2f2' }}>
-              <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '11px', color: '#dc2626', marginBottom: '12px', letterSpacing: '0.04em' }}>
-                This will permanently delete your account and all scripts. Type DELETE to confirm.
-              </div>
-              <input
-                type="text"
-                value={deleteConfirmText}
-                onChange={e => setDeleteConfirmText(e.target.value)}
-                placeholder="Type DELETE"
-                style={{ fontFamily: '"DM Mono", monospace', fontSize: '12px', width: '100%', padding: '8px', border: '0.5px solid #ddd', outline: 'none', marginBottom: '12px' }}
-              />
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText('') }} style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.1em', padding: '6px 12px', background: 'transparent', color: '#999', border: '0.5px solid #ddd', cursor: 'pointer' }}>Cancel</button>
-                <button onClick={handleDeleteAccount} disabled={deleteConfirmText !== 'DELETE'} style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.1em', padding: '6px 12px', background: '#dc2626', color: '#fff', border: 'none', cursor: deleteConfirmText === 'DELETE' ? 'pointer' : 'not-allowed', opacity: deleteConfirmText === 'DELETE' ? 1 : 0.5 }}>Delete Forever</button>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Autosave */}
@@ -427,6 +408,33 @@ export default function Settings() {
 
           {authError && <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', color: '#dc2626', marginTop: '12px' }}>{authError}</div>}
           {authMsg && <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', color: '#22c55e', marginTop: '12px' }}>{authMsg}</div>}
+
+          {/* Delete Account — LAST item in Account section */}
+          <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '0.5px solid #f0f0f0' }}>
+            <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '11px', color: '#dc2626', marginBottom: '8px', fontWeight: 'bold' }}>Danger Zone</div>
+            <button onClick={() => setShowDeleteConfirm(true)} style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.1em', padding: '8px 16px', background: 'transparent', color: '#dc2626', border: '0.5px solid #fca5a5', cursor: 'pointer' }}>
+              Delete Account
+            </button>
+          </div>
+
+          {showDeleteConfirm && (
+            <div style={{ marginTop: '16px', padding: '16px', border: '0.5px solid #fca5a5', background: '#fef2f2' }}>
+              <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '11px', color: '#dc2626', marginBottom: '12px', letterSpacing: '0.04em' }}>
+                This will permanently delete your account and all scripts. Type DELETE to confirm.
+              </div>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={e => setDeleteConfirmText(e.target.value)}
+                placeholder="Type DELETE"
+                style={{ fontFamily: '"DM Mono", monospace', fontSize: '12px', width: '100%', padding: '8px', border: '0.5px solid #ddd', outline: 'none', marginBottom: '12px' }}
+              />
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText('') }} style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.1em', padding: '6px 12px', background: 'transparent', color: '#999', border: '0.5px solid #ddd', cursor: 'pointer' }}>Cancel</button>
+                <button onClick={handleDeleteAccount} disabled={deleteConfirmText !== 'DELETE'} style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.1em', padding: '6px 12px', background: '#dc2626', color: '#fff', border: 'none', cursor: deleteConfirmText === 'DELETE' ? 'pointer' : 'not-allowed', opacity: deleteConfirmText === 'DELETE' ? 1 : 0.5 }}>Delete Forever</button>
+              </div>
+            </div>
+          )}
         </div>
 
       </div>
