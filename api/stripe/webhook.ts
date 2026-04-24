@@ -16,7 +16,10 @@ const supabase = createClient(
 
 // REPLACE with your Stripe webhook signing secret
 // Found in Stripe Dashboard → Webhooks → your endpoint → Signing secret
-const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_XXXXXXXXXX'
+const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET
+if (!WEBHOOK_SECRET) {
+  throw new Error('STRIPE_WEBHOOK_SECRET environment variable is required')
+}
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return res.status(405).end()

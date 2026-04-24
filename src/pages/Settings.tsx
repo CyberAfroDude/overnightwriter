@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useSubscription } from '../hooks/useSubscription'
+import { useViewport } from '../hooks/useViewport'
 import { supabase } from '../lib/supabase'
 import { canAccess } from '../lib/config'
 import { PROVIDER_INFO } from '../lib/providerInfo'
@@ -11,6 +12,7 @@ export default function Settings() {
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
   const { plan, trialEndsAt, currentPeriodEnd } = useSubscription()
+  const { isMobile } = useViewport()
   const [modelKeys, setModelKeys] = useState<Record<string, string>>({})
   const [savedKeys, setSavedKeys] = useState<Record<string, boolean>>({})
   const [expandedProvider, setExpandedProvider] = useState<string | null>(null)
@@ -172,7 +174,7 @@ export default function Settings() {
         {saveMsg && <span style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', color: '#22c55e', letterSpacing: '0.06em', marginLeft: 'auto' }}>● {saveMsg}</span>}
       </div>
 
-      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '48px 28px' }}>
+      <div style={{ maxWidth: '600px', margin: '0 auto', padding: isMobile ? '32px 20px' : '48px 28px' }}>
 
         {/* Plan status */}
         <div style={sectionStyle}>

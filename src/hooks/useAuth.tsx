@@ -41,8 +41,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password })
-    return { error }
+    const { data, error } = await supabase.auth.signUp({ email, password })
+    if (error) return { error }
+    // If email confirmation is required, no session is created
+    if (!data.session) {
+      return { error: new Error('Please check your email to confirm your account before signing in.') }
+    }
+    return { error: null }
   }
 
   const signInWithOAuth = async (provider: 'google' | 'apple') => {
@@ -62,7 +67,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signOut = async () => {
-    await supabase.auth.signOut()
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
   }
 
   return (

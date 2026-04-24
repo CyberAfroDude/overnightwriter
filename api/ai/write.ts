@@ -11,10 +11,11 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const ENCRYPTION_KEY = Buffer.from(
-  process.env.MODEL_KEY_ENCRYPTION_KEY || 'a'.repeat(64),
-  'hex'
-)
+const ENCRYPTION_KEY_HEX = process.env.MODEL_KEY_ENCRYPTION_KEY
+if (!ENCRYPTION_KEY_HEX) {
+  throw new Error('MODEL_KEY_ENCRYPTION_KEY environment variable is required')
+}
+const ENCRYPTION_KEY = Buffer.from(ENCRYPTION_KEY_HEX, 'hex')
 
 function decrypt(text: string): string {
   const [ivHex, encryptedHex] = text.split(':')

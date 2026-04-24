@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useSubscription } from '../../hooks/useSubscription'
+import { useViewport } from '../../hooks/useViewport'
 import { ADSENSE_CONFIG, canAccess } from '../../lib/config'
 
 declare global {
@@ -10,6 +11,7 @@ declare global {
 
 export default function AdBanner() {
   const { plan, loading } = useSubscription()
+  const { isMobile } = useViewport()
   const adRef = useRef<HTMLDivElement>(null)
   const initialized = useRef(false)
 
@@ -54,7 +56,7 @@ export default function AdBanner() {
     <div style={{
       position: 'fixed',
       bottom: 0,
-      left: '224px',
+      left: isMobile ? 0 : '224px',
       right: 0,
       height: '60px',
       background: '#fafafa',
