@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { STRIPE_CONFIG, PLAN_FEATURES, PlanId } from '../../lib/config'
+import { STRIPE_CONFIG, PLAN_FEATURES, PLAN_HIERARCHY, PLAN_NAMES, PlanId } from '../../lib/config'
 import { useSubscription } from '../../hooks/useSubscription'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
@@ -66,10 +66,51 @@ export default function PricingModal({ isOpen, onClose, highlightPlan }: Props) 
     }
   }
 
+  const handleManageDowngrade = async () => {
+    if (!user) return
+    const res = await fetch('/api/stripe/portal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id, returnUrl: window.location.href })
+    })
+    const { url } = await res.json()
+    if (url) window.location.href = url
+  }
+
+  const getPlanAction = (planId: PlanId) => {
+    if (planId === currentPlan) {
+      return { disabled: true, label: 'Current plan', onClick: () => undefined }
+    }
+
+    const currentRank = PLAN_HIERARCHY[currentPlan]
+    const targetRank = PLAN_HIERARCHY[planId]
+    const isUpgrade = targetRank > currentRank
+    const isDowngrade = targetRank < currentRank
+
+    if (isUpgrade && planId !== 'free') {
+      return {
+        disabled: false,
+        label: `Upgrade to ${PLAN_NAMES[planId]}`,
+        onClick: () => handleUpgrade(planId)
+      }
+    }
+
+    if (isDowngrade) {
+      return {
+        disabled: false,
+        label: `Downgrade to ${PLAN_NAMES[planId]}`,
+        onClick: handleManageDowngrade
+      }
+    }
+
+    return { disabled: true, label: 'Unavailable', onClick: () => undefined }
+  }
+
   const btnStyle = (planId: PlanId): React.CSSProperties => {
     const isCurrent = planId === currentPlan
     const isHighlighted = planId === highlightPlan
-    const isFree = planId === 'free'
+    const isDowngrade = PLAN_HIERARCHY[planId] < PLAN_HIERARCHY[currentPlan]
+    const isUpgrade = PLAN_HIERARCHY[planId] > PLAN_HIERARCHY[currentPlan]
 
     if (isCurrent) return {
       fontFamily: '"DM Mono", monospace',
@@ -83,15 +124,15 @@ export default function PricingModal({ isOpen, onClose, highlightPlan }: Props) 
       width: '100%'
     }
 
-    if (isFree) return {
+    if (isDowngrade) return {
       fontFamily: '"DM Mono", monospace',
       fontSize: '10px',
       letterSpacing: '0.1em',
       padding: '10px 20px',
       background: 'transparent',
-      color: '#ccc',
-      border: '0.5px solid #e8e8e8',
-      cursor: 'default',
+      color: '#7a7a7a',
+      border: '0.5px solid #d9d9d9',
+      cursor: 'pointer',
       width: '100%'
     }
 
@@ -100,10 +141,10 @@ export default function PricingModal({ isOpen, onClose, highlightPlan }: Props) 
       fontSize: '10px',
       letterSpacing: '0.1em',
       padding: '10px 20px',
-      background: isHighlighted ? '#111' : 'transparent',
-      color: isHighlighted ? '#fff' : '#111',
-      border: `0.5px solid ${isHighlighted ? '#111' : '#ccc'}`,
-      cursor: 'pointer',
+      background: isUpgrade && isHighlighted ? '#111' : 'transparent',
+      color: isUpgrade && isHighlighted ? '#fff' : '#111',
+      border: `0.5px solid ${(isUpgrade && isHighlighted) ? '#111' : '#ccc'}`,
+      cursor: isUpgrade ? 'pointer' : 'default',
       width: '100%'
     }
   }
@@ -272,16 +313,18 @@ export default function PricingModal({ isOpen, onClose, highlightPlan }: Props) 
                 </div>
 
                 {/* CTA */}
-                <button
-                  onClick={() => handleUpgrade(plan.id)}
-                  disabled={loading === plan.id || isCurrent || plan.id === 'free'}
-                  style={btnStyle(plan.id)}
-                >
-                  {loading === plan.id ? '...' :
-                   isCurrent ? 'Current plan' :
-                   plan.id === 'free' ? 'Free forever' :
-                   'Start free trial'}
-                </button>
+                {(() => {
+                  const action = getPlanAction(plan.id)
+                  return (
+                    <button
+                      onClick={action.onClick}
+                      disabled={loading === plan.id || action.disabled}
+                      style={btnStyle(plan.id)}
+                    >
+                      {loading === plan.id ? '...' : action.label}
+                    </button>
+                  )
+                })()}
               </div>
             )
           })}
