@@ -276,13 +276,21 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
     }
 
     // Approximate printable content height inside an 11in screenplay page.
-    const pageContentHeightPx = 820
+    // 11in page with 1in top + bottom padding and page number row leaves ~720px usable.
+    const pageContentHeightPx = 720
     const nextPages: DraftBlock[][] = [[]]
     let currentPage = 0
     let usedHeight = 0
 
     for (const block of blocks) {
-      const measuredHeight = blockRefs.current.get(block.id)?.offsetHeight ?? 24
+      const el = blockRefs.current.get(block.id)
+      let measuredHeight = 24
+      if (el) {
+        const style = window.getComputedStyle(el)
+        const marginTop = parseFloat(style.marginTop || '0') || 0
+        const marginBottom = parseFloat(style.marginBottom || '0') || 0
+        measuredHeight = el.offsetHeight + marginTop + marginBottom
+      }
       const blockHeight = Math.max(measuredHeight, 24)
 
       if (usedHeight + blockHeight > pageContentHeightPx && nextPages[currentPage].length > 0) {
@@ -334,7 +342,7 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
           style={{
             width: '100%',
             maxWidth: '8.5in',
-            minHeight: '11in',
+            height: isMobile ? 'auto' : '11in',
             background: '#fff',
             border: '0.5px solid #d0d0d0',
             boxShadow: '0 2px 8px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.04)',
@@ -343,7 +351,8 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
             fontFamily: '"DM Mono", monospace',
             fontSize: '12px',
             lineHeight: '1.8',
-            color: '#111'
+            color: '#111',
+            overflow: 'hidden'
           }}
         >
           <div style={{ textAlign: 'right', fontFamily: '"DM Mono", monospace', fontSize: '10px', color: '#ccc', marginBottom: '24px' }}>
