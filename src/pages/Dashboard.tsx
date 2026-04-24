@@ -24,6 +24,14 @@ export default function Dashboard() {
     navigate(`/editor/${scriptId}/${draftNumber}`)
   }
 
+  const handleOpenScript = (scriptId: string) => {
+    // Open the latest draft of the script
+    const script = scripts.find(s => s.id === scriptId)
+    if (script) {
+      navigate(`/editor/${scriptId}/${script.draft_count}`)
+    }
+  }
+
   const displayName = user?.email?.split('@')[0] || 'Writer'
   const initials = displayName.slice(0, 2).toUpperCase()
 
@@ -124,8 +132,8 @@ export default function Dashboard() {
                   zIndex: 10
                 }}>
                   {[
-                    { label: 'Account', action: () => {} },
-                    { label: 'Preferences', action: () => {} },
+                    { label: 'Account', action: () => navigate('/settings') },
+                    { label: 'Preferences', action: () => navigate('/settings') },
                     { label: 'API Keys', action: () => navigate('/api-keys') },
                   ].map(item => (
                     <div
@@ -192,7 +200,7 @@ export default function Dashboard() {
         )}
 
         {/* Main content */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', padding: '60px 28px', gap: '0' }}>
           {loading ? (
             <div style={{ fontSize: '12px', color: '#bbb', letterSpacing: '0.08em' }}>Loading...</div>
           ) : (
@@ -208,19 +216,77 @@ export default function Dashboard() {
                   color: '#111',
                   border: '0.5px solid #111',
                   cursor: 'pointer',
-                  textTransform: 'uppercase'
+                  textTransform: 'uppercase',
+                  marginBottom: '40px'
                 }}
               >
                 + New Script
               </button>
+
+              {/* FIX #9: Script list below the button */}
+              {scripts.length > 0 && (
+                <div style={{ width: '100%', maxWidth: '500px' }}>
+                  <div style={{
+                    fontFamily: '"DM Mono", monospace',
+                    fontSize: '10px',
+                    letterSpacing: '0.15em',
+                    color: '#aaa',
+                    textTransform: 'uppercase',
+                    marginBottom: '16px',
+                    paddingBottom: '8px',
+                    borderBottom: '0.5px solid #f0f0f0'
+                  }}>
+                    Your Scripts ({scripts.length})
+                  </div>
+                  {scripts.map(script => (
+                    <div
+                      key={script.id}
+                      onClick={() => handleOpenScript(script.id)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '12px 0',
+                        borderBottom: '0.5px solid #f5f5f5',
+                        cursor: 'pointer',
+                        transition: 'background 0.15s'
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = '#fafafa')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      <div>
+                        <div style={{
+                          fontFamily: '"EB Garamond", serif',
+                          fontSize: '15px',
+                          color: '#111',
+                          letterSpacing: '0.02em',
+                          marginBottom: '2px'
+                        }}>
+                          {script.title}
+                        </div>
+                        <div style={{
+                          fontFamily: '"DM Mono", monospace',
+                          fontSize: '10px',
+                          color: '#bbb',
+                          letterSpacing: '0.04em'
+                        }}>
+                          {script.writers.map(w => w.name).join(', ')} · {script.draft_count} draft{script.draft_count !== 1 ? 's' : ''}
+                        </div>
+                      </div>
+                      <span style={{
+                        fontFamily: '"DM Mono", monospace',
+                        fontSize: '10px',
+                        color: '#ccc',
+                        letterSpacing: '0.08em'
+                      }}>→</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {scripts.length === 0 && (
                 <div style={{ fontSize: '11px', color: '#ccc', letterSpacing: '0.05em' }}>
                   No scripts yet
-                </div>
-              )}
-              {scripts.length > 0 && (
-                <div style={{ fontSize: '11px', color: '#ccc', letterSpacing: '0.05em' }}>
-                  {scripts.length} script{scripts.length !== 1 ? 's' : ''}
                 </div>
               )}
             </>

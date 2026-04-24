@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback, useLayoutEffect } from 'react'
 import { DraftBlock, ElementType } from '../../types'
 import { useViewport } from '../../hooks/useViewport'
 import { v4 as uuidv4 } from 'uuid'
@@ -62,7 +62,7 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
   const [showAutocomplete, setShowAutocomplete] = useState(false)
   const [autocompleteIndex, setAutocompleteIndex] = useState(0)
   const blockRefs = useRef<Map<string, HTMLDivElement>>(new Map())
-  const autocompleteRef = useRef<HTMLDivElement>(null)
+  const lastBlockIdsRef = useRef<string>('')
   const { isMobile } = useViewport()
   const elementStyles = ELEMENT_STYLES(isMobile)
 
@@ -72,7 +72,20 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
       .map(b => b.text.trim().toUpperCase())
   )].sort()
 
-  const getFocusedBlock = () => blocks.find(b => b.id === focusedId)
+  // CRITICAL FIX #8: Sync DOM to state ONLY when block IDs change (new blocks added/removed)
+  // NOT on every text change. This prevents the invisible text bug.
+  const currentBlockIds = blocks.map(b => b.id).join(',')
+  useLayoutEffect(() => {
+    if (lastBlockIdsRef.current === currentBlockIds) return
+    lastBlockIdsRef.current = currentBlockIds
+    
+    blocks.forEach(block => {
+      const el = blockRefs.current.get(block.id)
+      if (el && el.textContent !== block.text) {
+        el.textContent = block.text
+      }
+    })
+  }, [currentBlockIds, blocks])
 
   const updateBlock = (id: string, text: string) => {
     onChange(blocks.map(b => b.id === id ? { ...b, text } : b))
@@ -153,7 +166,6 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
         const selectedName = characterNames[autocompleteIndex]
         updateBlock(id, selectedName)
         setShowAutocomplete(false)
-        // Move to dialogue
         addBlockAfter(id, 'dialogue')
         return
       }
@@ -166,22 +178,7 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
       
       // Dialogue → Character (first Enter), Action (second Enter on empty character)
       if (block.type === 'dialogue') {
-        // Check if next block exists and is empty character
-        const idx = blocks.findIndex(b => b.id === id)
-        const nextBlock = blocks[idx + 1]
-        if (nextBlock && nextBlock.type === 'character' && !nextBlock.text.trim()) {
-          // Change empty character to action
-          const updated = blocks.map(b => b.id === nextBlock.id ? { ...b, type: 'action' as ElementType } : b)
-          onChange(updated)
-          setTimeout(() => {
-            const el = blockRefs.current.get(nextBlock.id)
-            el?.focus()
-            setFocusedId(nextBlock.id)
-            onElementChange('action')
-          }, 10)
-        } else {
-          addBlockAfter(id, 'character')
-        }
+        addBlockAfter(id, 'character')
         return
       }
       
@@ -234,9 +231,10 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
   }
 
   const handleAutocompleteSelect = (blockId: string, name: string) => {
+    const el = blockRefs.current.get(blockId)
+    if (el) el.textContent = name
     updateBlock(blockId, name)
     setShowAutocomplete(false)
-    // Move to dialogue
     addBlockAfter(blockId, 'dialogue')
   }
 
@@ -269,7 +267,10 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
       }
     } else {
       // Fallback: append text
-      updateBlock(blockId, block.text + text)
+      const newText = block.text + text
+      const el = blockRefs.current.get(blockId)
+      if (el) el.textContent = newText
+      updateBlock(blockId, newText)
     }
   }
 
@@ -280,15 +281,19 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
       fontFamily: '"DM Mono", monospace',
       fontSize: '12px',
       lineHeight: '1.8',
-      color: '#111',
-      userSelect: 'text'
+      color: '#111'
     }}>
-      {blocks.map((block, index) => (
+      {blocks.map((block) => (
         <div key={block.id} style={{ position: 'relative' }}>
           <div
             ref={el => {
-              if (el) blockRefs.current.set(block.id, el)
-              else blockRefs.current.delete(block.id)
+              if (el) {
+                blockRefs.current.set(block.id, el)
+                // Only set textContent on initial mount, not on every render
+                // The useLayoutEffect above handles sync when blocks change
+              } else {
+                blockRefs.current.delete(block.id)
+              }
             }}
             contentEditable
             suppressContentEditableWarning
@@ -308,16 +313,13 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
               minHeight: '1.8em',
               color: block.ai_written ? '#2563eb' : '#111',
               ...elementStyles[block.type],
-              position: 'relative',
-              userSelect: 'text',
-              cursor: 'text'
+              position: 'relative'
             }}
           />
           
           {/* Character autocomplete dropdown */}
           {block.type === 'character' && showAutocomplete && focusedId === block.id && characterNames.length > 0 && (
             <div
-              ref={autocompleteRef}
               style={{
                 position: 'absolute',
                 top: '100%',

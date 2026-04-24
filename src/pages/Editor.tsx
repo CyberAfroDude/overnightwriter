@@ -88,9 +88,13 @@ export default function Editor() {
   const [generateOpen, setGenerateOpen] = useState(false)
   const [pricingOpen, setPricingOpen] = useState(false)
   const [showScenePanel, setShowScenePanel] = useState(false)
-  const [showNewScriptModal, setShowNewScriptModal] = useState(false)
-  const [newScriptTitle, setNewScriptTitle] = useState('')
+  const [showTitlePageEditor, setShowTitlePageEditor] = useState(false)
+  const [editTitle, setEditTitle] = useState('')
+  const [editWriters, setEditWriters] = useState<{name: string, credit: string}[]>([])
+  const [editEmail, setEditEmail] = useState('')
+  const [editPhone, setEditPhone] = useState('')
   const isSwitchingRef = useRef(false)
+  const editorScrollRef = useRef<HTMLDivElement>(null)
   const { isMobile } = useViewport()
 
   // Load script metadata
@@ -104,6 +108,18 @@ export default function Editor() {
   useEffect(() => {
     if (draft?.content) {
       setBlocks(draft.content)
+      // FIX #9: Scroll to bottom when opening a script
+      setTimeout(() => {
+        if (editorScrollRef.current) {
+          editorScrollRef.current.scrollTop = editorScrollRef.current.scrollHeight
+        }
+        // Also focus the last block
+        const lastBlock = draft.content[draft.content.length - 1]
+        if (lastBlock) {
+          const event = new CustomEvent('focus-last-block', { detail: { blockId: lastBlock.id } })
+          window.dispatchEvent(event)
+        }
+      }, 100)
     }
   }, [draft?.id])
 
@@ -158,19 +174,36 @@ export default function Editor() {
     setTimeout(() => { creatingDraftRef.current = false }, 1000)
   }
 
-  // + Script flow
-  const handleNewScript = async () => {
-    if (!newScriptTitle.trim()) return
-    const { script: newScript, draft: newDraft, error } = await createScript(
-      newScriptTitle.trim(),
-      [{ name: user?.email?.split('@')[0] || 'Writer', credit: 'Screenplay By' }],
-      user?.email || '',
-      ''
-    )
-    if (!error && newScript && newDraft) {
-      setShowNewScriptModal(false)
-      setNewScriptTitle('')
-      navigate(`/editor/${newScript.id}/${newDraft.draft_number}`)
+  // + Script flow — navigate to NewScript page for consistent flow
+  const handleNewScript = () => {
+    navigate('/new')
+  }
+
+  // Edit Title Page
+  const openTitlePageEditor = () => {
+    if (!script) return
+    setEditTitle(script.title)
+    setEditWriters(script.writers.map(w => ({ name: w.name, credit: w.credit })))
+    setEditEmail(script.contact_email || '')
+    setEditPhone(script.contact_phone || '')
+    setShowTitlePageEditor(true)
+  }
+
+  const saveTitlePage = async () => {
+    if (!script || !scriptId) return
+    const { error } = await supabase
+      .from('scripts')
+      .update({
+        title: editTitle.trim(),
+        writers: editWriters.filter(w => w.name.trim()).map(w => ({ name: w.name.trim(), credit: w.credit })),
+        contact_email: editEmail.trim(),
+        contact_phone: editPhone.trim(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', scriptId)
+    if (!error) {
+      setScript(prev => prev ? { ...prev, title: editTitle.trim(), writers: editWriters.filter(w => w.name.trim()).map(w => ({ name: w.name.trim(), credit: w.credit as 'Screenplay By' | 'Story By' })), contact_email: editEmail.trim(), contact_phone: editPhone.trim() } : null)
+      setShowTitlePageEditor(false)
     }
   }
 
@@ -297,8 +330,15 @@ export default function Editor() {
 
             {/* + Script button */}
             {!isMobile && (
-              <button onClick={() => setShowNewScriptModal(true)} style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: '0.5px solid #111' }} title="New Script">
+              <button onClick={handleNewScript} style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: '0.5px solid #111' }} title="New Script">
                 + Script
+              </button>
+            )}
+
+            {/* Edit Title Page button */}
+            {!isMobile && (
+              <button onClick={openTitlePageEditor} style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: '0.5px solid #e8e8e8' }} title="Edit Title Page">
+                ✎ Title
               </button>
             )}
 
@@ -433,8 +473,8 @@ export default function Editor() {
         bottomOffset={adHeight}
       />
 
-      {/* New Script Modal */}
-      {showNewScriptModal && (
+      {/* Edit Title Page Modal */}
+      {showTitlePageEditor && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           background: 'rgba(255,255,255,0.95)', zIndex: 300,
@@ -442,31 +482,111 @@ export default function Editor() {
         }}>
           <div style={{
             background: '#fff', border: '0.5px solid #e8e8e8',
-            padding: '40px', maxWidth: '400px', width: '90%'
+            padding: '40px', maxWidth: '460px', width: '90%',
+            maxHeight: '80vh', overflowY: 'auto'
           }}>
             <div style={{
               fontFamily: '"EB Garamond", serif', fontSize: '18px',
               color: '#111', marginBottom: '24px', letterSpacing: '0.04em'
             }}>
-              New Script
+              Edit Title Page
             </div>
-            <input
-              type="text"
-              placeholder="Script title..."
-              value={newScriptTitle}
-              onChange={e => setNewScriptTitle(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') handleNewScript() }}
-              autoFocus
-              style={{
-                fontFamily: '"DM Mono", monospace', fontSize: '13px',
-                width: '100%', padding: '10px 0', border: 'none',
-                borderBottom: '0.5px solid #ccc', outline: 'none',
-                background: 'transparent', color: '#111', marginBottom: '24px'
-              }}
-            />
+            
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.15em', color: '#aaa', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>Title</label>
+              <input
+                type="text"
+                value={editTitle}
+                onChange={e => setEditTitle(e.target.value)}
+                style={{
+                  fontFamily: '"EB Garamond", serif', fontSize: '20px',
+                  width: '100%', padding: '8px 0', border: 'none',
+                  borderBottom: '0.5px solid #ccc', outline: 'none',
+                  background: 'transparent', color: '#111'
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.15em', color: '#aaa', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>Writers</label>
+              {editWriters.map((w, i) => (
+                <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                  <input
+                    type="text"
+                    value={w.name}
+                    onChange={e => {
+                      const updated = [...editWriters]
+                      updated[i] = { ...updated[i], name: e.target.value }
+                      setEditWriters(updated)
+                    }}
+                    placeholder="Writer name"
+                    style={{
+                      fontFamily: '"DM Mono", monospace', fontSize: '12px', flex: 1,
+                      padding: '6px 0', border: 'none', borderBottom: '0.5px solid #ddd',
+                      outline: 'none', background: 'transparent', color: '#111'
+                    }}
+                  />
+                  <select
+                    value={w.credit}
+                    onChange={e => {
+                      const updated = [...editWriters]
+                      updated[i] = { ...updated[i], credit: e.target.value }
+                      setEditWriters(updated)
+                    }}
+                    style={{
+                      fontFamily: '"DM Mono", monospace', fontSize: '10px',
+                      border: '0.5px solid #ddd', padding: '4px 6px',
+                      background: 'transparent', color: '#666', outline: 'none'
+                    }}
+                  >
+                    <option>Screenplay By</option>
+                    <option>Story By</option>
+                  </select>
+                </div>
+              ))}
+              {editWriters.length < 4 && (
+                <button
+                  onClick={() => setEditWriters([...editWriters, { name: '', credit: 'Screenplay By' }])}
+                  style={{
+                    fontFamily: '"DM Mono", monospace', fontSize: '10px',
+                    letterSpacing: '0.1em', color: '#bbb', background: 'none',
+                    border: 'none', cursor: 'pointer', padding: '0', marginTop: '4px'
+                  }}
+                >
+                  + add writer
+                </button>
+              )}
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.15em', color: '#aaa', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>Contact</label>
+              <input
+                type="email"
+                value={editEmail}
+                onChange={e => setEditEmail(e.target.value)}
+                placeholder="Email"
+                style={{
+                  fontFamily: '"DM Mono", monospace', fontSize: '12px', width: '100%',
+                  padding: '6px 0', border: 'none', borderBottom: '0.5px solid #ddd',
+                  outline: 'none', background: 'transparent', color: '#111', marginBottom: '8px'
+                }}
+              />
+              <input
+                type="tel"
+                value={editPhone}
+                onChange={e => setEditPhone(e.target.value)}
+                placeholder="Phone"
+                style={{
+                  fontFamily: '"DM Mono", monospace', fontSize: '12px', width: '100%',
+                  padding: '6px 0', border: 'none', borderBottom: '0.5px solid #ddd',
+                  outline: 'none', background: 'transparent', color: '#111'
+                }}
+              />
+            </div>
+
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
               <button
-                onClick={() => { setShowNewScriptModal(false); setNewScriptTitle('') }}
+                onClick={() => setShowTitlePageEditor(false)}
                 style={{
                   fontFamily: '"DM Mono", monospace', fontSize: '10px',
                   letterSpacing: '0.1em', padding: '8px 16px',
@@ -477,17 +597,15 @@ export default function Editor() {
                 Cancel
               </button>
               <button
-                onClick={handleNewScript}
-                disabled={!newScriptTitle.trim()}
+                onClick={saveTitlePage}
                 style={{
                   fontFamily: '"DM Mono", monospace', fontSize: '10px',
                   letterSpacing: '0.1em', padding: '8px 16px',
                   background: '#111', color: '#fff',
-                  border: 'none', cursor: newScriptTitle.trim() ? 'pointer' : 'not-allowed',
-                  opacity: newScriptTitle.trim() ? 1 : 0.5
+                  border: 'none', cursor: 'pointer'
                 }}
               >
-                Create
+                Save
               </button>
             </div>
           </div>
