@@ -59,11 +59,9 @@ interface Props {
 
 export default function ScreenplayEditor({ blocks, onChange, onElementChange, onPaste }: Props) {
   const [focusedId, setFocusedId] = useState<string | null>(null)
-  const [activeBlockId, setActiveBlockId] = useState<string | null>(null)
   const [showAutocomplete, setShowAutocomplete] = useState(false)
   const [autocompleteIndex, setAutocompleteIndex] = useState(0)
   const blockRefs = useRef<Map<string, HTMLDivElement>>(new Map())
-  const editorRootRef = useRef<HTMLDivElement>(null)
   const { isMobile } = useViewport()
   const elementStyles = ELEMENT_STYLES(isMobile)
   const [pages, setPages] = useState<DraftBlock[][]>([blocks])
@@ -117,7 +115,6 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
 
     const newBlocks = [...blocks.slice(0, idx + 1), newBlock, ...blocks.slice(idx + 1)]
     onChange(newBlocks)
-    setActiveBlockId(newBlock.id)
 
     setTimeout(() => {
       const el = blockRefs.current.get(newBlock.id)
@@ -134,7 +131,6 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
     onChange(newBlocks)
     const prevIdx = Math.max(0, idx - 1)
     const prevId = newBlocks[prevIdx]?.id
-    if (prevId) setActiveBlockId(prevId)
     setTimeout(() => {
       const el = blockRefs.current.get(prevId)
       el?.focus()
@@ -211,7 +207,6 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
   }
 
   const handleFocus = (id: string) => {
-    setActiveBlockId(id)
     setFocusedId(id)
     editingRef.current = id
     const block = blocks.find(b => b.id === id)
@@ -223,9 +218,6 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
     updateBlock(id, text)
     if (editingRef.current === id) {
       editingRef.current = null
-    }
-    if (activeBlockId === id) {
-      setActiveBlockId(null)
     }
   }
 
@@ -317,27 +309,7 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
   }, [paginateBlocks])
 
   return (
-    <div
-      ref={editorRootRef}
-      onKeyDownCapture={e => {
-        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'a') {
-          const selection = window.getSelection()
-          if (!selection || !editorRootRef.current) return
-          e.preventDefault()
-          const range = document.createRange()
-          range.selectNodeContents(editorRootRef.current)
-          selection.removeAllRanges()
-          selection.addRange(range)
-        }
-      }}
-      onMouseDown={e => {
-        if (e.target === editorRootRef.current) {
-          setActiveBlockId(null)
-          setFocusedId(null)
-        }
-      }}
-      style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}
-    >
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
       {pages.map((pageBlocks, pageIndex) => (
         <div
           key={`page-${pageIndex}`}
@@ -379,7 +351,7 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
                   blockRefs.current.delete(block.id)
                 }
               }}
-              contentEditable={activeBlockId === block.id}
+              contentEditable
               suppressContentEditableWarning
               spellCheck={false}
               onFocus={() => handleFocus(block.id)}
@@ -394,20 +366,12 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
                 block.type === 'parenthetical' ? '(beat)' :
                 'CUT TO:'}
               data-has-content={isEmpty ? 'false' : 'true'}
-              data-active={activeBlockId === block.id ? 'true' : 'false'}
-              onClick={() => {
-                if (activeBlockId !== block.id) {
-                  setActiveBlockId(block.id)
-                  setTimeout(() => blockRefs.current.get(block.id)?.focus(), 0)
-                }
-              }}
               style={{
                 outline: 'none',
                 minHeight: '1.8em',
                 color: block.ai_written ? '#2563eb' : '#111',
                 ...elementStyles[block.type],
                 position: 'relative',
-                cursor: activeBlockId === block.id ? 'text' : 'default',
                 userSelect: 'text'
               }}
             />
@@ -458,7 +422,7 @@ export default function ScreenplayEditor({ blocks, onChange, onElementChange, on
         </div>
       ))}
       <style>{`
-        [contenteditable="true"][data-has-content="false"]::before {
+        [contenteditable][data-has-content="false"]::before {
           content: attr(data-placeholder);
           color: #ccc;
           pointer-events: none;
