@@ -19,6 +19,8 @@ import { canAccess } from '../lib/config'
 import { v4 as uuidv4 } from 'uuid'
 import { normalizeDraftBlocks } from '../lib/editor/screenplayDocAdapter'
 
+type BlocksReplacement = DraftBlock[] | ((currentBlocks: DraftBlock[]) => DraftBlock[])
+
 const FloppyIcon = () => (
   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
     <rect x="1" y="1" width="12" height="12" rx="1" stroke="currentColor" strokeWidth="0.8"/>
@@ -102,6 +104,14 @@ export default function Editor() {
   const editorScrollRef = useRef<HTMLDivElement>(null)
   const { isMobile } = useViewport()
 
+  const replaceBlocksFromParent = useCallback((nextBlocks: BlocksReplacement) => {
+    setBlocks(currentBlocks => {
+      const resolvedBlocks = typeof nextBlocks === 'function' ? nextBlocks(currentBlocks) : nextBlocks
+      return normalizeDraftBlocks(resolvedBlocks)
+    })
+    setContentEpoch(e => e + 1)
+  }, [])
+
   // Load script metadata
   useEffect(() => {
     if (!scriptId) return
@@ -112,12 +122,10 @@ export default function Editor() {
   // Layer 1+2: Full hydrate only when `draft.id` changes (switch/load). Autosave updates the draft row but does not bump `contentEpoch` or replace `blocks` here — see `saveDraft` in useDraft.
   useLayoutEffect(() => {
     if (!draft?.content) return
-    const normalized = normalizeDraftBlocks(draft.content)
     flushSync(() => {
-      setBlocks(normalized)
-      setContentEpoch(e => e + 1)
+      replaceBlocksFromParent(draft.content)
     })
-  }, [draft?.id])
+  }, [draft?.id, replaceBlocksFromParent])
 
   useEffect(() => {
     if (!draft?.content) return
@@ -169,8 +177,7 @@ export default function Editor() {
   }, [])
 
   const handleBlocksGenerated = (newBlocks: DraftBlock[]) => {
-    setBlocks(prev => [...prev, ...newBlocks])
-    setContentEpoch(e => e + 1)
+    replaceBlocksFromParent(currentBlocks => [...currentBlocks, ...newBlocks])
   }
 
   // FIX #3: New draft only via dedicated button — guard against double-click
@@ -235,12 +242,11 @@ export default function Editor() {
     if (pastedText.trim().length < 10) return false
     const parsed = parsePastedText(pastedText)
     if (parsed.length > 1) {
-      setBlocks(normalizeDraftBlocks(parsed))
-      setContentEpoch(e => e + 1)
+      replaceBlocksFromParent(parsed)
       return true
     }
     return false
-  }, [])
+  }, [replaceBlocksFromParent])
 
   // FIX #9: Scene and character analysis
   const scenes = blocks.filter(b => b.type === 'scene-heading' && b.text.trim())

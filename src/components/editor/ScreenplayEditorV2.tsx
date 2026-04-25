@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { Node, mergeAttributes } from '@tiptap/core'
+import { Plugin } from '@tiptap/pm/state'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import { DraftBlock, ElementType } from '../../types'
@@ -23,6 +24,8 @@ const SCREENPLAY_BLOCK = 'screenplayBlock'
 const PAGE_HEIGHT = 1056
 const PAGE_GAP = 24
 const PAGE_VERTICAL_PADDING = 192 // 1in top + 1in bottom at 96dpi
+
+const createBlockId = () => crypto.randomUUID()
 
 const ScreenplayBlock = Node.create({
   name: SCREENPLAY_BLOCK,
@@ -67,7 +70,7 @@ const ScreenplayBlock = Node.create({
         const current = (attrs.screenplayType || 'action') as ElementType
         const next = defaultNextType(current)
         const nextAttrs = {
-          blockId: crypto.randomUUID(),
+          blockId: createBlockId(),
           screenplayType: next,
           aiWritten: false
         }
@@ -75,6 +78,35 @@ const ScreenplayBlock = Node.create({
         return this.editor.commands.setNode(SCREENPLAY_BLOCK, nextAttrs)
       }
     }
+  },
+
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        appendTransaction: (transactions, _oldState, newState) => {
+          if (!transactions.some(transaction => transaction.docChanged)) return null
+
+          const seenIds = new Set<string>()
+          let tr = newState.tr
+          let changed = false
+
+          newState.doc.descendants((node, pos) => {
+            if (node.type.name !== SCREENPLAY_BLOCK) return
+
+            const incomingId = typeof node.attrs.blockId === 'string' ? node.attrs.blockId.trim() : ''
+            const blockId = incomingId && !seenIds.has(incomingId) ? incomingId : createBlockId()
+            seenIds.add(blockId)
+
+            if (blockId !== node.attrs.blockId) {
+              changed = true
+              tr = tr.setNodeMarkup(pos, undefined, { ...node.attrs, blockId })
+            }
+          })
+
+          return changed ? tr : null
+        }
+      })
+    ]
   }
 })
 
