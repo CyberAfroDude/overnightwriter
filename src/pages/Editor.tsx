@@ -21,6 +21,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { normalizeDraftBlocks } from '../lib/editor/screenplayDocAdapter'
 import { blocksToFountain } from '../lib/editor/fountainProjection'
 import { parseFountainToBlocks } from '../lib/editor/fountainImport'
+import { exportOWX, parseOWXToBlocks } from '../lib/editor/owx'
 
 type BlocksReplacement = DraftBlock[] | ((currentBlocks: DraftBlock[]) => DraftBlock[])
 
@@ -237,26 +238,41 @@ export default function Editor() {
     if (!script || !draft) return
     const currentDraft = { ...draft, content: blocks }
     setExportOpen(false)
-    if (format === 'fountain') exportFountain(script, currentDraft)
+    if (format === 'owx') exportOWX(script, currentDraft, blocks)
+    else if (format === 'fountain') exportFountain(script, currentDraft)
     else if (format === 'txt') exportTXT(script, currentDraft)
     else if (format === 'fdx') exportFDX(script, currentDraft)
     else if (format === 'pdf') await exportPDF(script, currentDraft)
   }
 
-  const handleFountainImport = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileImport = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     event.target.value = ''
     if (!file) return
 
     try {
       const source = await file.text()
-      const importedBlocks = parseFountainToBlocks(source)
-      const shouldImport = window.confirm(`Import ${importedBlocks.length} Fountain blocks? This will replace the current draft content.`)
+      const name = file.name.toLowerCase()
+      let importedBlocks: DraftBlock[]
+      let label = 'text'
+
+      if (name.endsWith('.owx')) {
+        importedBlocks = parseOWXToBlocks(source)
+        label = 'OWX'
+      } else if (name.endsWith('.fountain')) {
+        importedBlocks = parseFountainToBlocks(source)
+        label = 'Fountain'
+      } else {
+        importedBlocks = parsePastedText(source)
+        label = 'plain text'
+      }
+
+      const shouldImport = window.confirm(`Import ${importedBlocks.length} ${label} blocks? This will replace the current draft content.`)
       if (!shouldImport) return
       replaceBlocksFromParent(importedBlocks)
       setShowFountainPanel(false)
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unable to import Fountain file.'
+      const message = error instanceof Error ? error.message : 'Unable to import file.'
       window.alert(message)
     }
   }, [replaceBlocksFromParent])
@@ -372,8 +388,8 @@ export default function Editor() {
             <input
               ref={importInputRef}
               type="file"
-              accept=".fountain,.txt,text/plain"
-              onChange={handleFountainImport}
+              accept=".owx,.fountain,.txt,text/plain,application/json"
+              onChange={handleFileImport}
               style={{ display: 'none' }}
             />
 
@@ -381,7 +397,7 @@ export default function Editor() {
               <button
                 onClick={() => importInputRef.current?.click()}
                 style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: '0.5px solid #e8e8e8' }}
-                title="Import Fountain"
+                title="Import File (.owx/.fountain/.txt)"
               >
                 Import
               </button>
@@ -450,6 +466,7 @@ export default function Editor() {
               {exportOpen && (
                 <div style={{ position: 'absolute', top: '30px', right: 0, background: '#fff', border: '0.5px solid #e5e5e5', minWidth: '150px', zIndex: 50 }} onMouseLeave={() => setExportOpen(false)}>
                   {[
+                    { label: 'OvernightWriter', ext: '.owx', format: 'owx' },
                     { label: 'PDF', ext: '.pdf', format: 'pdf' },
                     { label: 'Fountain', ext: '.fountain', format: 'fountain' },
                     { label: 'Final Draft', ext: '.fdx', format: 'fdx' },
