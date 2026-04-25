@@ -22,7 +22,7 @@ interface Props {
 
 const SCREENPLAY_BLOCK = 'screenplayBlock'
 const PAGE_HEIGHT = 1056
-const PAGE_GAP = 24
+const PAGE_GAP = 0
 const PAGE_VERTICAL_PADDING = 192 // 1in top + 1in bottom at 96dpi
 
 const createBlockId = () => crypto.randomUUID()
@@ -225,7 +225,6 @@ export default function ScreenplayEditorV2({
         ref={hostRef}
         style={{
           position: 'relative',
-          paddingBottom: `${(pages - 1) * PAGE_GAP}px`,
           minHeight: isMobile ? 'auto' : `${pages * PAGE_HEIGHT + (pages - 1) * PAGE_GAP}px`
         }}
       >
