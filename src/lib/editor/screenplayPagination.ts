@@ -54,6 +54,8 @@ export interface BlockSegment {
   blockId: string
   type: DraftBlock['type']
   pageIndex: number
+  pageRowStart: number
+  pageRowEnd: number
   startLine: number
   endLine: number
   lines: string[]
@@ -310,6 +312,8 @@ export function paginateBlocksHard(
         blockId: block.id,
         type: block.type,
         pageIndex: currentPage().index,
+        pageRowStart: currentPage().usedLines,
+        pageRowEnd: currentPage().usedLines + take - 1,
         startLine,
         endLine,
         lines: slice

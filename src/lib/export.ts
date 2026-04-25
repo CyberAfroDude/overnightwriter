@@ -1,6 +1,6 @@
 import { DraftBlock, Script, Draft, Writer } from '../types'
 import { buildFountainSource } from './editor/fountainProjection'
-import { paginateScreenplayBlocks, SCREENPLAY_PDF_LAYOUT } from './editor/screenplayPagination'
+import { paginateBlocksHard, SCREENPLAY_PDF_LAYOUT } from './editor/screenplayPagination'
 
 function buildTitlePageText(script: Script): string {
   const screenplayBy = script.writers.filter((w: Writer) => w.credit === 'Screenplay By')
@@ -129,7 +129,21 @@ export async function exportPDF(script: Script, draft: Draft) {
   // Script pages
   doc.addPage()
   doc.setFontSize(12)
-  const pages = paginateScreenplayBlocks(draft.content)
+  const pages = paginateBlocksHard(draft.content).pages
+  const textX = (type: DraftBlock['type']) => {
+    switch (type) {
+      case 'character':
+        return margin.left + SCREENPLAY_PDF_LAYOUT.characterIndent
+      case 'dialogue':
+        return margin.left + SCREENPLAY_PDF_LAYOUT.dialogueIndent
+      case 'parenthetical':
+        return margin.left + SCREENPLAY_PDF_LAYOUT.parentheticalIndent
+      case 'transition':
+        return pageWidth - margin.right
+      default:
+        return margin.left
+    }
+  }
   pages.forEach((page, pageIndex) => {
     if (pageIndex > 0) doc.addPage()
 
@@ -138,27 +152,31 @@ export async function exportPDF(script: Script, draft: Draft) {
     doc.text(`${pageIndex + 1}.`, pageWidth - margin.right, margin.top - 0.3, { align: 'right' })
     doc.setFontSize(12)
 
-    page.lines.forEach(line => {
-      switch (line.type) {
+    page.segments.forEach(segment => {
+      const x = textX(segment.type)
+      segment.lines.forEach((line, lineIndex) => {
+        const y = margin.top + (segment.pageRowStart + lineIndex + 1) * lineHeight
+        switch (segment.type) {
         case 'scene-heading':
           doc.setFont('Courier', 'bold')
-          doc.text(line.text, line.x, line.y)
+          doc.text(line, x, y)
           doc.setFont('Courier', 'normal')
           break
         case 'transition':
           doc.setFont('Courier', 'normal')
-          doc.text(line.text, line.x, line.y, { align: line.align || 'right' })
+          doc.text(line, x, y, { align: 'right' })
           break
         case 'action':
         case 'character':
         case 'dialogue':
         case 'parenthetical':
           doc.setFont('Courier', 'normal')
-          doc.text(line.text, line.x, line.y)
+          doc.text(line, x, y)
           break
         default:
           break
-      }
+        }
+      })
     })
   })
 
