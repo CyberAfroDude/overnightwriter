@@ -19,6 +19,7 @@ import { canAccess } from '../lib/config'
 import { v4 as uuidv4 } from 'uuid'
 import { normalizeDraftBlocks } from '../lib/editor/screenplayDocAdapter'
 import { blocksToFountain } from '../lib/editor/fountainProjection'
+import { parseFountainToBlocks } from '../lib/editor/fountainImport'
 
 type BlocksReplacement = DraftBlock[] | ((currentBlocks: DraftBlock[]) => DraftBlock[])
 
@@ -104,6 +105,7 @@ export default function Editor() {
   const [editPhone, setEditPhone] = useState('')
   const isSwitchingRef = useRef(false)
   const editorScrollRef = useRef<HTMLDivElement>(null)
+  const importInputRef = useRef<HTMLInputElement>(null)
   const { isMobile } = useViewport()
 
   const replaceBlocksFromParent = useCallback((nextBlocks: BlocksReplacement) => {
@@ -239,6 +241,24 @@ export default function Editor() {
     else if (format === 'pdf') await exportPDF(script, currentDraft)
   }
 
+  const handleFountainImport = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+
+    try {
+      const source = await file.text()
+      const importedBlocks = parseFountainToBlocks(source)
+      const shouldImport = window.confirm(`Import ${importedBlocks.length} Fountain blocks? This will replace the current draft content.`)
+      if (!shouldImport) return
+      replaceBlocksFromParent(importedBlocks)
+      setShowFountainPanel(false)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to import Fountain file.'
+      window.alert(message)
+    }
+  }, [replaceBlocksFromParent])
+
   // FIX #8: Smart paste handler
   const handlePaste = useCallback((pastedText: string) => {
     if (pastedText.trim().length < 10) return false
@@ -347,11 +367,28 @@ export default function Editor() {
 
             {/* Floppy save */}
             <button onClick={handleManualSave} style={iconBtnStyle} title="Save"><FloppyIcon /></button>
+            <input
+              ref={importInputRef}
+              type="file"
+              accept=".fountain,.txt,text/plain"
+              onChange={handleFountainImport}
+              style={{ display: 'none' }}
+            />
 
             {/* + Script button */}
             {!isMobile && (
               <button onClick={handleNewScript} style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: '0.5px solid #111' }} title="New Script">
                 + Script
+              </button>
+            )}
+
+            {!isMobile && (
+              <button
+                onClick={() => importInputRef.current?.click()}
+                style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: '0.5px solid #e8e8e8' }}
+                title="Import Fountain"
+              >
+                Import
               </button>
             )}
 
