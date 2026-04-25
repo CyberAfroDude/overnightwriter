@@ -375,13 +375,6 @@ export default function Editor() {
               style={{ display: 'none' }}
             />
 
-            {/* + Script button */}
-            {!isMobile && (
-              <button onClick={handleNewScript} style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: '0.5px solid #111' }} title="New Script">
-                + Script
-              </button>
-            )}
-
             {!isMobile && (
               <button
                 onClick={() => importInputRef.current?.click()}
@@ -389,6 +382,23 @@ export default function Editor() {
                 title="Import Fountain"
               >
                 Import
+              </button>
+            )}
+
+            {!isMobile && (
+              <button
+                onClick={() => setShowFountainPanel(!showFountainPanel)}
+                title="Fountain Source"
+                style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: showFountainPanel ? '#111' : '#aaa', padding: '5px 8px', border: showFountainPanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
+              >
+                Source
+              </button>
+            )}
+
+            {/* + Script button */}
+            {!isMobile && (
+              <button onClick={handleNewScript} style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: '0.5px solid #111' }} title="New Script">
+                + Script
               </button>
             )}
 
@@ -407,16 +417,6 @@ export default function Editor() {
                 style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: showScenePanel ? '#111' : '#aaa', padding: '5px 8px', border: showScenePanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
               >
                 ¶
-              </button>
-            )}
-
-            {!isMobile && (
-              <button
-                onClick={() => setShowFountainPanel(!showFountainPanel)}
-                title="Fountain Source"
-                style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: showFountainPanel ? '#111' : '#aaa', padding: '5px 8px', border: showFountainPanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
-              >
-                FTN
               </button>
             )}
 
