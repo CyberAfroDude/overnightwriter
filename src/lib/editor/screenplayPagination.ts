@@ -218,6 +218,15 @@ function linesPerPage(spec: PaginationSpec): number {
   return Math.floor((spec.pageHeightIn - spec.marginTopIn - spec.marginBottomIn) / spec.lineHeightIn)
 }
 
+function estimateBlockFootprint(block: DraftBlock): number {
+  const raw = block.text || ''
+  if (!raw.trim()) return 0
+  const style = styleForType(block.type)
+  const normalized = style.uppercase ? raw.toUpperCase() : raw
+  const wrapped = wrapText(normalized, charsForWidth(style.maxWidthIn))
+  return Math.ceil(style.beforeLines) + wrapped.length + Math.ceil(style.afterLines)
+}
+
 /**
  * Starter hard-pagination engine.
  *
@@ -248,10 +257,23 @@ export function paginateBlocksHard(
     newPage()
   }
 
-  blocks.forEach(block => {
+  for (let index = 0; index < blocks.length; index += 1) {
+    const block = blocks[index]
     const raw = block.text || ''
-    if (!raw.trim()) return
+    if (!raw.trim()) continue
     const style = styleForType(block.type)
+
+    if (style.keepWithNext) {
+      const next = blocks[index + 1]
+      if (next && next.text.trim()) {
+        const groupedFootprint = estimateBlockFootprint(block) + estimateBlockFootprint(next)
+        // Keep short grouped pairs together by starting them on the next page.
+        if (groupedFootprint > 0 && groupedFootprint <= maxLines) {
+          ensureRoom(groupedFootprint)
+        }
+      }
+    }
+
     const normalized = style.uppercase ? raw.toUpperCase() : raw
     const wrapped = wrapText(normalized, charsForWidth(style.maxWidthIn))
 
@@ -287,7 +309,7 @@ export function paginateBlocksHard(
       ensureRoom(after)
       consume(after)
     }
-  })
+  }
 
   return { pages, recomputeFromBlockIndex: 0 }
 }
