@@ -37,6 +37,7 @@ export interface PaginationSpec {
   marginBottomIn: number
   // The line grid is currently fixed-width/courier-oriented.
   lineHeightIn: number
+  minSplitLines: number
 }
 
 export interface PaginationStyle {
@@ -193,7 +194,8 @@ const DEFAULT_SPEC: PaginationSpec = {
   pageHeightIn: SCREENPLAY_PDF_LAYOUT.pageHeight,
   marginTopIn: SCREENPLAY_PDF_LAYOUT.margin.top,
   marginBottomIn: SCREENPLAY_PDF_LAYOUT.margin.bottom,
-  lineHeightIn: SCREENPLAY_PDF_LAYOUT.lineHeight
+  lineHeightIn: SCREENPLAY_PDF_LAYOUT.lineHeight,
+  minSplitLines: 2
 }
 
 function styleForType(type: DraftBlock['type']): PaginationStyle {
@@ -287,7 +289,19 @@ export function paginateBlocksHard(
     while (lineIdx < wrapped.length) {
       if (currentPage().usedLines >= maxLines) newPage()
       const capacity = maxLines - currentPage().usedLines
-      const take = Math.max(1, Math.min(capacity, wrapped.length - lineIdx))
+      const remaining = wrapped.length - lineIdx
+      let take = Math.max(1, Math.min(capacity, remaining))
+      if (block.type === 'dialogue' && remaining > spec.minSplitLines) {
+        // Widow/orphan guard: avoid splitting dialogue into very short tails/heads across pages.
+        if (take < spec.minSplitLines) {
+          newPage()
+          continue
+        }
+        const tail = remaining - take
+        if (tail > 0 && tail < spec.minSplitLines) {
+          take = Math.max(spec.minSplitLines, take - (spec.minSplitLines - tail))
+        }
+      }
       const slice = wrapped.slice(lineIdx, lineIdx + take)
       const startLine = lineIdx
       const endLine = lineIdx + take - 1
