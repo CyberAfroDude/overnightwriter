@@ -1,5 +1,6 @@
 import { DraftBlock, Script, Draft, Writer } from '../types'
 import { buildFountainSource } from './editor/fountainProjection'
+import { paginateScreenplayBlocks, SCREENPLAY_PDF_LAYOUT } from './editor/screenplayPagination'
 
 function buildTitlePageText(script: Script): string {
   const screenplayBy = script.writers.filter((w: Writer) => w.credit === 'Screenplay By')
@@ -90,17 +91,7 @@ ${elements}
 export async function exportPDF(script: Script, draft: Draft) {
   const { jsPDF } = await import('jspdf')
   const doc = new jsPDF({ unit: 'in', format: 'letter' })
-  const margin = { top: 1, bottom: 1, left: 1.5, right: 1 }
-  const pageWidth = 8.5
-  const lineHeight = 0.167
-  let y = margin.top
-
-  const checkPage = (lines: number) => {
-    if (y + lines * lineHeight > 11 - margin.bottom) {
-      doc.addPage()
-      y = margin.top
-    }
-  }
+  const { margin, pageWidth, lineHeight } = SCREENPLAY_PDF_LAYOUT
 
   doc.setFont('Courier', 'normal')
   doc.setFontSize(12)
@@ -138,71 +129,37 @@ export async function exportPDF(script: Script, draft: Draft) {
   // Script pages
   doc.addPage()
   doc.setFontSize(12)
-  y = margin.top
-  let pageNum = 1
-  doc.setFontSize(10)
-  doc.text(`${pageNum}.`, pageWidth - margin.right, margin.top - 0.3, { align: 'right' })
-  doc.setFontSize(12)
+  const pages = paginateScreenplayBlocks(draft.content)
+  pages.forEach((page, pageIndex) => {
+    if (pageIndex > 0) doc.addPage()
 
-  draft.content.forEach(block => {
-    if (!block.text.trim()) return
-    const x = margin.left
-    const maxWidth = pageWidth - margin.left - margin.right
+    doc.setFontSize(10)
+    doc.setFont('Courier', 'normal')
+    doc.text(`${pageIndex + 1}.`, pageWidth - margin.right, margin.top - 0.3, { align: 'right' })
+    doc.setFontSize(12)
 
-    switch (block.type) {
-      case 'scene-heading': {
-        checkPage(2)
-        y += lineHeight
-        doc.setFont('Courier', 'bold')
-        doc.text(block.text.toUpperCase(), x, y)
-        doc.setFont('Courier', 'normal')
-        y += lineHeight * 1.5
-        break
+    page.lines.forEach(line => {
+      switch (line.type) {
+        case 'scene-heading':
+          doc.setFont('Courier', 'bold')
+          doc.text(line.text, line.x, line.y)
+          doc.setFont('Courier', 'normal')
+          break
+        case 'transition':
+          doc.setFont('Courier', 'normal')
+          doc.text(line.text, line.x, line.y, { align: line.align || 'right' })
+          break
+        case 'action':
+        case 'character':
+        case 'dialogue':
+        case 'parenthetical':
+          doc.setFont('Courier', 'normal')
+          doc.text(line.text, line.x, line.y)
+          break
+        default:
+          break
       }
-      case 'action': {
-        const lines = doc.splitTextToSize(block.text, maxWidth)
-        checkPage(lines.length + 1)
-        lines.forEach((line: string) => { doc.text(line, x, y); y += lineHeight })
-        y += lineHeight * 0.5
-        break
-      }
-      case 'character': {
-        checkPage(3)
-        y += lineHeight * 0.5
-        doc.text(block.text.toUpperCase(), x + 2.0, y)
-        y += lineHeight
-        break
-      }
-      case 'dialogue': {
-        const lines = doc.splitTextToSize(block.text, maxWidth - 2.0)
-        checkPage(lines.length)
-        lines.forEach((line: string) => { doc.text(line, x + 1.0, y); y += lineHeight })
-        y += lineHeight * 0.5
-        break
-      }
-      case 'parenthetical': {
-        checkPage(2)
-        doc.text(`(${block.text})`, x + 1.5, y)
-        y += lineHeight
-        break
-      }
-      case 'transition': {
-        checkPage(2)
-        y += lineHeight * 0.5
-        doc.text(block.text.toUpperCase(), pageWidth - margin.right, y, { align: 'right' })
-        y += lineHeight * 1.5
-        break
-      }
-    }
-
-    if (y > 11 - margin.bottom) {
-      doc.addPage()
-      pageNum++
-      doc.setFontSize(10)
-      doc.text(`${pageNum}.`, pageWidth - margin.right, margin.top - 0.3, { align: 'right' })
-      doc.setFontSize(12)
-      y = margin.top
-    }
+    })
   })
 
   doc.save(`${script.title} - Draft ${draft.draft_number}.pdf`)
