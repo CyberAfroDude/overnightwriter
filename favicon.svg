@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <rect width="100" height="100" fill="#ffffff"/>
+  <!-- Moon crescent -->
+  <path d="M35 50 C35 28 52 12 74 12 C62 20 54 36 54 50 C54 64 62 80 74 88 C52 88 35 72 35 50Z" fill="#111111"/>
+  <!-- Pen stroke -->
+  <line x1="48" y1="32" x2="68" y2="68" stroke="#111111" stroke-width="3" stroke-linecap="round"/>
+</svg>
