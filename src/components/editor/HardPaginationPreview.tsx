@@ -1,4 +1,4 @@
-import { useMemo, type CSSProperties } from 'react'
+import { useMemo, useState, type CSSProperties } from 'react'
 import { DraftBlock } from '../../types'
 import { paginateBlocksHard } from '../../lib/editor/screenplayPagination'
 
@@ -45,9 +45,23 @@ function renderSegmentLine(type: DraftBlock['type'], line: string, idx: number) 
 
 export default function HardPaginationPreview({ blocks }: Props) {
   const result = useMemo(() => paginateBlocksHard(blocks), [blocks])
+  const [showDebug, setShowDebug] = useState(false)
 
   return (
     <div style={{ width: '100%', padding: '24px', overflowY: 'auto', background: '#fafafa' }}>
+      <div style={{ width: '100%', maxWidth: '8.5in', margin: '0 auto 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', color: '#888', letterSpacing: '0.08em' }}>
+          HARD PAGINATION PREVIEW
+        </span>
+        <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontFamily: '"DM Mono", monospace', fontSize: '10px', color: '#666', letterSpacing: '0.08em', cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={showDebug}
+            onChange={e => setShowDebug(e.target.checked)}
+          />
+          DEBUG OVERLAY
+        </label>
+      </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
         {result.pages.map(page => (
           <div key={page.index} style={pageStyle}>
@@ -61,6 +75,21 @@ export default function HardPaginationPreview({ blocks }: Props) {
             </div>
             {page.segments.map(segment => (
               <div key={segment.segmentId}>
+                {showDebug && (
+                  <div
+                    style={{
+                      fontFamily: '"DM Mono", monospace',
+                      fontSize: '9px',
+                      letterSpacing: '0.08em',
+                      color: '#777',
+                      border: '0.5px dashed #d8d8d8',
+                      padding: '4px 6px',
+                      margin: '4px 0'
+                    }}
+                  >
+                    {segment.type.toUpperCase()} | ROWS {segment.pageRowStart}-{segment.pageRowEnd} | LINES {segment.startLine}-{segment.endLine}
+                  </div>
+                )}
                 {segment.lines.map((line, idx) => renderSegmentLine(segment.type, line, idx))}
               </div>
             ))}
