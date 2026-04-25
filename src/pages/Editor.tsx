@@ -18,6 +18,7 @@ import { exportFountain, exportTXT, exportFDX, exportPDF } from '../lib/export'
 import { canAccess } from '../lib/config'
 import { v4 as uuidv4 } from 'uuid'
 import { normalizeDraftBlocks } from '../lib/editor/screenplayDocAdapter'
+import { blocksToFountain } from '../lib/editor/fountainProjection'
 
 type BlocksReplacement = DraftBlock[] | ((currentBlocks: DraftBlock[]) => DraftBlock[])
 
@@ -95,6 +96,7 @@ export default function Editor() {
   const [generateOpen, setGenerateOpen] = useState(false)
   const [pricingOpen, setPricingOpen] = useState(false)
   const [showScenePanel, setShowScenePanel] = useState(false)
+  const [showFountainPanel, setShowFountainPanel] = useState(false)
   const [showTitlePageEditor, setShowTitlePageEditor] = useState(false)
   const [editTitle, setEditTitle] = useState('')
   const [editWriters, setEditWriters] = useState<{name: string, credit: string}[]>([])
@@ -254,6 +256,7 @@ export default function Editor() {
     blocks.filter(b => b.type === 'character' && b.text.trim())
       .map(b => b.text.trim().toUpperCase())
   )].sort()
+  const fountainSource = blocksToFountain(blocks)
 
   const showAds = !canAccess(plan, 'nomad')
   const adHeight = showAds ? 60 : 0
@@ -370,6 +373,16 @@ export default function Editor() {
               </button>
             )}
 
+            {!isMobile && (
+              <button
+                onClick={() => setShowFountainPanel(!showFountainPanel)}
+                title="Fountain Source"
+                style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: showFountainPanel ? '#111' : '#aaa', padding: '5px 8px', border: showFountainPanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
+              >
+                FTN
+              </button>
+            )}
+
             {/* AI generate */}
             <button
               onClick={() => setGenerateOpen(prev => !prev)}
@@ -468,6 +481,35 @@ export default function Editor() {
                 ))}
                 {characters.length === 0 && <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '9px', color: '#ccc' }}>No characters yet</div>}
               </div>
+            </div>
+          )}
+
+          {showFountainPanel && !isMobile && (
+            <div style={{ width: '320px', borderLeft: '0.5px solid #e8e8e8', overflowY: 'auto', flexShrink: 0, background: '#fff', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ padding: '14px 16px', borderBottom: '0.5px solid #f0f0f0', flexShrink: 0 }}>
+                <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '9px', letterSpacing: '0.15em', color: '#aaa', textTransform: 'uppercase' }}>
+                  Fountain Source
+                </div>
+                <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '9px', color: '#bbb', marginTop: '6px', lineHeight: 1.5 }}>
+                  Read-only projection from screenplay blocks.
+                </div>
+              </div>
+              <pre
+                aria-label="Read-only Fountain source"
+                style={{
+                  margin: 0,
+                  padding: '16px',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  fontFamily: '"Courier Prime", "Courier New", Courier, monospace',
+                  fontSize: '11px',
+                  lineHeight: 1.45,
+                  color: '#333',
+                  userSelect: 'text'
+                }}
+              >
+                {fountainSource || 'No screenplay content yet.'}
+              </pre>
             </div>
           )}
         </div>

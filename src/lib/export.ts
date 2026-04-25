@@ -1,18 +1,5 @@
 import { DraftBlock, Script, Draft, Writer } from '../types'
-
-function blocksToFountain(blocks: DraftBlock[]): string {
-  return blocks.map(b => {
-    switch (b.type) {
-      case 'scene-heading': return `\n${b.text.toUpperCase()}\n`
-      case 'action': return `\n${b.text}\n`
-      case 'character': return `\n${b.text.toUpperCase()}`
-      case 'dialogue': return b.text
-      case 'parenthetical': return `(${b.text})`
-      case 'transition': return `\n${b.text.toUpperCase()}\n`
-      default: return b.text
-    }
-  }).join('\n').trim()
-}
+import { buildFountainSource } from './editor/fountainProjection'
 
 function buildTitlePageText(script: Script): string {
   const screenplayBy = script.writers.filter((w: Writer) => w.credit === 'Screenplay By')
@@ -36,21 +23,7 @@ function buildTitlePageText(script: Script): string {
 }
 
 export function exportFountain(script: Script, draft: Draft) {
-  const screenplayBy = script.writers.filter((w: Writer) => w.credit === 'Screenplay By')
-  const storyBy = script.writers.filter((w: Writer) => w.credit === 'Story By')
-
-  const titleLines = [
-    `Title: ${script.title}`,
-    screenplayBy.length > 0 ? `Screenplay By: ${screenplayBy.map((w: Writer) => w.name).join(' & ')}` : '',
-    storyBy.length > 0 ? `Story By: ${storyBy.map((w: Writer) => w.name).join(' & ')}` : '',
-    script.contact_email ? `Contact: ${script.contact_email}` : '',
-    script.contact_phone ? `Phone: ${script.contact_phone}` : '',
-    '---',
-    ''
-  ].filter(Boolean).join('\n')
-
-  const body = blocksToFountain(draft.content)
-  downloadFile(`${script.title} - Draft ${draft.draft_number}.fountain`, titleLines + '\n' + body, 'text/plain')
+  downloadFile(`${script.title} - Draft ${draft.draft_number}.fountain`, buildFountainSource(script, draft), 'text/plain')
 }
 
 export function exportTXT(script: Script, draft: Draft) {
