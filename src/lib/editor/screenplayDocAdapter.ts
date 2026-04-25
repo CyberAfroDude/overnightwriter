@@ -12,12 +12,19 @@ const defaultBlock = (): DraftBlock => ({
 export function normalizeDraftBlocks(content: DraftBlock[]): DraftBlock[] {
   const blocks = Array.isArray(content) ? content : []
   if (blocks.length > 0) {
-    return blocks.map((block, index) => ({
-      id: block.id || uuidv4(),
-      type: block.type || (index === 0 ? 'scene-heading' : 'action'),
-      text: block.text || '',
-      ai_written: block.ai_written ?? false
-    }))
+    const seenIds = new Set<string>()
+    return blocks.map((block, index) => {
+      const incomingId = typeof block.id === 'string' ? block.id.trim() : ''
+      const id = incomingId && !seenIds.has(incomingId) ? incomingId : uuidv4()
+      seenIds.add(id)
+
+      return {
+        id,
+        type: block.type || (index === 0 ? 'scene-heading' : 'action'),
+        text: block.text || '',
+        ai_written: block.ai_written ?? false
+      }
+    })
   }
 
   return [defaultBlock()]

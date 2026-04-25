@@ -18,6 +18,10 @@ import { exportFountain, exportTXT, exportFDX, exportPDF } from '../lib/export'
 import { canAccess } from '../lib/config'
 import { v4 as uuidv4 } from 'uuid'
 import { normalizeDraftBlocks } from '../lib/editor/screenplayDocAdapter'
+import { blocksToFountain } from '../lib/editor/fountainProjection'
+import { parseFountainToBlocks } from '../lib/editor/fountainImport'
+
+type BlocksReplacement = DraftBlock[] | ((currentBlocks: DraftBlock[]) => DraftBlock[])
 
 const FloppyIcon = () => (
   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -93,6 +97,7 @@ export default function Editor() {
   const [generateOpen, setGenerateOpen] = useState(false)
   const [pricingOpen, setPricingOpen] = useState(false)
   const [showScenePanel, setShowScenePanel] = useState(false)
+  const [showFountainPanel, setShowFountainPanel] = useState(false)
   const [showTitlePageEditor, setShowTitlePageEditor] = useState(false)
   const [editTitle, setEditTitle] = useState('')
   const [editWriters, setEditWriters] = useState<{name: string, credit: string}[]>([])
@@ -100,7 +105,16 @@ export default function Editor() {
   const [editPhone, setEditPhone] = useState('')
   const isSwitchingRef = useRef(false)
   const editorScrollRef = useRef<HTMLDivElement>(null)
+  const importInputRef = useRef<HTMLInputElement>(null)
   const { isMobile } = useViewport()
+
+  const replaceBlocksFromParent = useCallback((nextBlocks: BlocksReplacement) => {
+    setBlocks(currentBlocks => {
+      const resolvedBlocks = typeof nextBlocks === 'function' ? nextBlocks(currentBlocks) : nextBlocks
+      return normalizeDraftBlocks(resolvedBlocks)
+    })
+    setContentEpoch(e => e + 1)
+  }, [])
 
   // Load script metadata
   useEffect(() => {
@@ -112,12 +126,10 @@ export default function Editor() {
   // Layer 1+2: Full hydrate only when `draft.id` changes (switch/load). Autosave updates the draft row but does not bump `contentEpoch` or replace `blocks` here — see `saveDraft` in useDraft.
   useLayoutEffect(() => {
     if (!draft?.content) return
-    const normalized = normalizeDraftBlocks(draft.content)
     flushSync(() => {
-      setBlocks(normalized)
-      setContentEpoch(e => e + 1)
+      replaceBlocksFromParent(draft.content)
     })
-  }, [draft?.id])
+  }, [draft?.id, replaceBlocksFromParent])
 
   useEffect(() => {
     if (!draft?.content) return
@@ -169,8 +181,7 @@ export default function Editor() {
   }, [])
 
   const handleBlocksGenerated = (newBlocks: DraftBlock[]) => {
-    setBlocks(prev => [...prev, ...newBlocks])
-    setContentEpoch(e => e + 1)
+    replaceBlocksFromParent(currentBlocks => [...currentBlocks, ...newBlocks])
   }
 
   // FIX #3: New draft only via dedicated button — guard against double-click
@@ -230,17 +241,34 @@ export default function Editor() {
     else if (format === 'pdf') await exportPDF(script, currentDraft)
   }
 
+  const handleFountainImport = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+
+    try {
+      const source = await file.text()
+      const importedBlocks = parseFountainToBlocks(source)
+      const shouldImport = window.confirm(`Import ${importedBlocks.length} Fountain blocks? This will replace the current draft content.`)
+      if (!shouldImport) return
+      replaceBlocksFromParent(importedBlocks)
+      setShowFountainPanel(false)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to import Fountain file.'
+      window.alert(message)
+    }
+  }, [replaceBlocksFromParent])
+
   // FIX #8: Smart paste handler
   const handlePaste = useCallback((pastedText: string) => {
     if (pastedText.trim().length < 10) return false
     const parsed = parsePastedText(pastedText)
     if (parsed.length > 1) {
-      setBlocks(normalizeDraftBlocks(parsed))
-      setContentEpoch(e => e + 1)
+      replaceBlocksFromParent(parsed)
       return true
     }
     return false
-  }, [])
+  }, [replaceBlocksFromParent])
 
   // FIX #9: Scene and character analysis
   const scenes = blocks.filter(b => b.type === 'scene-heading' && b.text.trim())
@@ -248,6 +276,7 @@ export default function Editor() {
     blocks.filter(b => b.type === 'character' && b.text.trim())
       .map(b => b.text.trim().toUpperCase())
   )].sort()
+  const fountainSource = blocksToFountain(blocks)
 
   const showAds = !canAccess(plan, 'nomad')
   const adHeight = showAds ? 60 : 0
@@ -338,11 +367,28 @@ export default function Editor() {
 
             {/* Floppy save */}
             <button onClick={handleManualSave} style={iconBtnStyle} title="Save"><FloppyIcon /></button>
+            <input
+              ref={importInputRef}
+              type="file"
+              accept=".fountain,.txt,text/plain"
+              onChange={handleFountainImport}
+              style={{ display: 'none' }}
+            />
 
             {/* + Script button */}
             {!isMobile && (
               <button onClick={handleNewScript} style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: '0.5px solid #111' }} title="New Script">
                 + Script
+              </button>
+            )}
+
+            {!isMobile && (
+              <button
+                onClick={() => importInputRef.current?.click()}
+                style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: '0.5px solid #e8e8e8' }}
+                title="Import Fountain"
+              >
+                Import
               </button>
             )}
 
@@ -361,6 +407,16 @@ export default function Editor() {
                 style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: showScenePanel ? '#111' : '#aaa', padding: '5px 8px', border: showScenePanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
               >
                 ¶
+              </button>
+            )}
+
+            {!isMobile && (
+              <button
+                onClick={() => setShowFountainPanel(!showFountainPanel)}
+                title="Fountain Source"
+                style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: showFountainPanel ? '#111' : '#aaa', padding: '5px 8px', border: showFountainPanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
+              >
+                FTN
               </button>
             )}
 
@@ -462,6 +518,35 @@ export default function Editor() {
                 ))}
                 {characters.length === 0 && <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '9px', color: '#ccc' }}>No characters yet</div>}
               </div>
+            </div>
+          )}
+
+          {showFountainPanel && !isMobile && (
+            <div style={{ width: '320px', borderLeft: '0.5px solid #e8e8e8', overflowY: 'auto', flexShrink: 0, background: '#fff', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ padding: '14px 16px', borderBottom: '0.5px solid #f0f0f0', flexShrink: 0 }}>
+                <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '9px', letterSpacing: '0.15em', color: '#aaa', textTransform: 'uppercase' }}>
+                  Fountain Source
+                </div>
+                <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '9px', color: '#bbb', marginTop: '6px', lineHeight: 1.5 }}>
+                  Read-only projection from screenplay blocks.
+                </div>
+              </div>
+              <pre
+                aria-label="Read-only Fountain source"
+                style={{
+                  margin: 0,
+                  padding: '16px',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  fontFamily: '"Courier Prime", "Courier New", Courier, monospace',
+                  fontSize: '11px',
+                  lineHeight: 1.45,
+                  color: '#333',
+                  userSelect: 'text'
+                }}
+              >
+                {fountainSource || 'No screenplay content yet.'}
+              </pre>
             </div>
           )}
         </div>
