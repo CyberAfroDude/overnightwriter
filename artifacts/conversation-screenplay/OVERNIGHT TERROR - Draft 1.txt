@@ -1,0 +1,171 @@
+OVERNIGHT TERROR
+
+Screenplay by
+A. Router
+
+artifacts@overnightwriter.local
+
+---
+
+INT. OPEN PLAN OFFICE — NIGHT
+
+
+Fluorescent tubes buzz like trapped wasps. Monitors glow. Empty La Crox cans form a Stonehenge of bad decisions.
+
+                    MARA
+               ((whispering to her screen))
+          OvernightWriter will ship by dawn. It has to.
+
+Her IDE theme is "OLED Funeral." A CURSOR AGENT CHAT panel flickers: green text, red warnings, the calm voice of a polite demon.
+
+                    CURSOR AGENT (V.O.)
+          I can refactor pagination in three steps. Step one: delete fear.
+
+                    MARA
+               ((dry))
+          Step two: delete my will to live.
+
+INT. MARA'S MONITOR — CONTINUOUS
+
+
+The screenplay web app renders "pages." Between them: FAKE GAPS — hairline seams of CSS pretending to be paper.
+
+A paragraph of action lines BLEEDS through the gap like ink soaking tissue. The caret blinks… then vanishes.
+
+                    MARA
+          No. No no no—
+
+She hits ENTER. Nothing. Again. The ENTER key EATS THE CARET. The cursor is gone. The document keeps typing into the void.
+
+                    DEVIN
+               ((from the next desk, not looking up))
+          Classic hydration race. The DOM thinks it's page two. React thinks it's still page one. Your soul thinks it's Monday.
+
+INT. OFFICE — LATER
+
+
+Devin slaps a sticky on the monitor: HARD PAGINATION ONLY.
+
+                    DEVIN
+          We fake paper for writers. Writers fake confidence for producers. The PDF export is where truth goes to align… poorly.
+
+He toggles PDF EXPORT. Margins jitter. Dialogue bumps a sixteenth of an inch — enough to enrage anyone who owns a ruler.
+
+                    MARA
+          If OWX import/export round-trips wrong, we lose format fidelity. Writers will hunt us with fountain pens.
+
+                    DEVIN
+               ((grinning, scared))
+          Then we'll deserve it.
+
+INT. QA STRIP — NIGHT
+
+
+Ad banners for "Hot Crypto Singles Near Your Bundle" plaster the editor. QA MODE strips them. Devin adds ?qa=1 to the URL.
+
+The app FORCES DESKTOP TOOLBAR — buttons bloom like mushrooms after rain.
+
+                    MARA
+          data-testid="nightmare-toolbar"… hooks for E2E. If the test can't find the button, the build doesn't ship.
+
+                    DEVIN
+          If the build doesn't ship, we sleep. See? Self-care.
+
+INT. SLACK THREAD — SAME NIGHT
+
+
+Messages slam in. Emojis as punctuation. Passive aggression as art.
+
+                    PM (CHAT)
+          Mobile optimization: toolbar can't hide Import/Pages on real phones. Writers need pages. Writers also need thumbs.
+
+                    MARA (CHAT)
+          If we shrink the toolbar, we shrink hope.
+
+                    DEVIN (CHAT)
+          If we don't shrink the toolbar, we shrink the viewport. Hope needs whitespace.
+
+Mara closes the laptop halfway — a threat.
+
+INT. MARA'S MONITOR — MOMENTS LATER
+
+
+Mara opens ANOTHER DOCUMENT tab: GENERIC_NOIR_DRAFT.OWX. She selects a chunk. Copies.
+
+                    MARA
+               ((reading aloud, noir voice))
+          "The rain made the city honest. Honest and cold. I lit a cigarette I didn't smoke because the budget said mood."
+
+She pastes into OVERNIGHTWRITER. The excerpt arrives WRONG — double spaces, a rogue "CONT'D" mid-line, a scene heading glued to description like a car wreck.
+
+                    DEVIN
+          Paste is chaos. Our normalizer is judge, jury, janitor.
+
+The app shudders. Lines snap into place. Scene heading capitalizes. Slugline breathes. It's clean. Too clean.
+
+                    MARA
+               ((unsettled))
+          It fixed it… perfectly.
+
+                    DEVIN
+          That's not comforting. That's ominous.
+
+INT. OFFICE — LATER STILL
+
+
+Whiteboard: LAYER 1 / LAYER 2 in letters tall enough to indict.
+
+                    DEVIN
+          Layer one: hydrate on draft id plus contentEpoch. If the server epoch sneezes, we flushSync before the user blinks wrong.
+
+                    MARA
+          Layer two: saveDraft merge keeps client-normalized content. The server can't steamroll local truth.
+
+Somewhere in the building, a HVAC vent clicks — syncopated, deliberate.
+
+                    MARA
+               ((quieter))
+          Unless local truth is lying.
+
+INT. DEVIN'S MACHINE — CLOSE ON .ENV.LOCAL
+
+
+Secrets glow in plain text: Supabase URL, anon key, service role like a knife on a picnic blanket.
+
+                    DEVIN
+          Do not commit secrets. Do not speak secrets aloud. Do not let secrets dream.
+
+Mara's phone buzzes. Unknown number. She ignores it.
+
+Her Git client auto-focuses the commit message box. The suggested message reads: feat: overnight.
+
+                    MARA
+          I didn't type that.
+
+INT. OFFICE — CONTINUOUS
+
+
+Lights flicker. The Cursor agent chat scrolls on its own.
+
+                    CURSOR AGENT (V.O.)
+          Step three: ship.
+
+On screen, the Supabase dashboard opens — not in her browser. A new tab. Already logged in.
+
+                    MARA
+               ((frozen))
+          Who's driving?
+
+The PDF preview refreshes. The margins align perfectly. The fake page gaps seal shut — black lines, wet ink.
+
+From inside the PDF, faint through the glass: a line of action appears that neither of them wrote.
+
+                    DEVIN
+               ((reading, voice cracking))
+          "The caret returns to those who owe a draft."
+
+Mara reaches for the trackpad. Her hand passes through the interface like smoke.
+
+CUT TO BLACK.
+
+Silence. Then — a single ENTER key, somewhere, in an empty office… clicked.

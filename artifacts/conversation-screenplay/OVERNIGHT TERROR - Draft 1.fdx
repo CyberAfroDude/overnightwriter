@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FinalDraft DocumentType="Script" Template="No" Version="1">
+  <Content>
+    <Paragraph Type="Scene Heading">
+      <Text>INT. OPEN PLAN OFFICE — NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Fluorescent tubes buzz like trapped wasps. Monitors glow. Empty La Crox cans form a Stonehenge of bad decisions.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARA</Text>
+    </Paragraph>
+    <Paragraph Type="Parenthetical">
+      <Text>(whispering to her screen)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>OvernightWriter will ship by dawn. It has to.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Her IDE theme is &quot;OLED Funeral.&quot; A CURSOR AGENT CHAT panel flickers: green text, red warnings, the calm voice of a polite demon.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>CURSOR AGENT (V.O.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I can refactor pagination in three steps. Step one: delete fear.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARA</Text>
+    </Paragraph>
+    <Paragraph Type="Parenthetical">
+      <Text>(dry)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Step two: delete my will to live.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <Text>INT. MARA&apos;S MONITOR — CONTINUOUS</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The screenplay web app renders &quot;pages.&quot; Between them: FAKE GAPS — hairline seams of CSS pretending to be paper.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>A paragraph of action lines BLEEDS through the gap like ink soaking tissue. The caret blinks… then vanishes.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARA</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>No. No no no—</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>She hits ENTER. Nothing. Again. The ENTER key EATS THE CARET. The cursor is gone. The document keeps typing into the void.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DEVIN</Text>
+    </Paragraph>
+    <Paragraph Type="Parenthetical">
+      <Text>(from the next desk, not looking up)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Classic hydration race. The DOM thinks it&apos;s page two. React thinks it&apos;s still page one. Your soul thinks it&apos;s Monday.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <Text>INT. OFFICE — LATER</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Devin slaps a sticky on the monitor: HARD PAGINATION ONLY.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DEVIN</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>We fake paper for writers. Writers fake confidence for producers. The PDF export is where truth goes to align… poorly.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>He toggles PDF EXPORT. Margins jitter. Dialogue bumps a sixteenth of an inch — enough to enrage anyone who owns a ruler.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARA</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>If OWX import/export round-trips wrong, we lose format fidelity. Writers will hunt us with fountain pens.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DEVIN</Text>
+    </Paragraph>
+    <Paragraph Type="Parenthetical">
+      <Text>(grinning, scared)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Then we&apos;ll deserve it.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <Text>INT. QA STRIP — NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Ad banners for &quot;Hot Crypto Singles Near Your Bundle&quot; plaster the editor. QA MODE strips them. Devin adds ?qa=1 to the URL.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The app FORCES DESKTOP TOOLBAR — buttons bloom like mushrooms after rain.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARA</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>data-testid=&quot;nightmare-toolbar&quot;… hooks for E2E. If the test can&apos;t find the button, the build doesn&apos;t ship.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DEVIN</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>If the build doesn&apos;t ship, we sleep. See? Self-care.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <Text>INT. SLACK THREAD — SAME NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Messages slam in. Emojis as punctuation. Passive aggression as art.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>PM (CHAT)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Mobile optimization: toolbar can&apos;t hide Import/Pages on real phones. Writers need pages. Writers also need thumbs.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARA (CHAT)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>If we shrink the toolbar, we shrink hope.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DEVIN (CHAT)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>If we don&apos;t shrink the toolbar, we shrink the viewport. Hope needs whitespace.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Mara closes the laptop halfway — a threat.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <Text>INT. MARA&apos;S MONITOR — MOMENTS LATER</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Mara opens ANOTHER DOCUMENT tab: GENERIC_NOIR_DRAFT.OWX. She selects a chunk. Copies.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARA</Text>
+    </Paragraph>
+    <Paragraph Type="Parenthetical">
+      <Text>(reading aloud, noir voice)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>&quot;The rain made the city honest. Honest and cold. I lit a cigarette I didn&apos;t smoke because the budget said mood.&quot;</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>She pastes into OVERNIGHTWRITER. The excerpt arrives WRONG — double spaces, a rogue &quot;CONT&apos;D&quot; mid-line, a scene heading glued to description like a car wreck.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DEVIN</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Paste is chaos. Our normalizer is judge, jury, janitor.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The app shudders. Lines snap into place. Scene heading capitalizes. Slugline breathes. It&apos;s clean. Too clean.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARA</Text>
+    </Paragraph>
+    <Paragraph Type="Parenthetical">
+      <Text>(unsettled)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>It fixed it… perfectly.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DEVIN</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>That&apos;s not comforting. That&apos;s ominous.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <Text>INT. OFFICE — LATER STILL</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Whiteboard: LAYER 1 / LAYER 2 in letters tall enough to indict.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DEVIN</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Layer one: hydrate on draft id plus contentEpoch. If the server epoch sneezes, we flushSync before the user blinks wrong.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARA</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Layer two: saveDraft merge keeps client-normalized content. The server can&apos;t steamroll local truth.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Somewhere in the building, a HVAC vent clicks — syncopated, deliberate.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARA</Text>
+    </Paragraph>
+    <Paragraph Type="Parenthetical">
+      <Text>(quieter)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Unless local truth is lying.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <Text>INT. DEVIN&apos;S MACHINE — CLOSE ON .ENV.LOCAL</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Secrets glow in plain text: Supabase URL, anon key, service role like a knife on a picnic blanket.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DEVIN</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Do not commit secrets. Do not speak secrets aloud. Do not let secrets dream.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Mara&apos;s phone buzzes. Unknown number. She ignores it.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Her Git client auto-focuses the commit message box. The suggested message reads: feat: overnight.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARA</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I didn&apos;t type that.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <Text>INT. OFFICE — CONTINUOUS</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Lights flicker. The Cursor agent chat scrolls on its own.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>CURSOR AGENT (V.O.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Step three: ship.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>On screen, the Supabase dashboard opens — not in her browser. A new tab. Already logged in.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARA</Text>
+    </Paragraph>
+    <Paragraph Type="Parenthetical">
+      <Text>(frozen)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Who&apos;s driving?</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The PDF preview refreshes. The margins align perfectly. The fake page gaps seal shut — black lines, wet ink.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>From inside the PDF, faint through the glass: a line of action appears that neither of them wrote.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DEVIN</Text>
+    </Paragraph>
+    <Paragraph Type="Parenthetical">
+      <Text>(reading, voice cracking)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>&quot;The caret returns to those who owe a draft.&quot;</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Mara reaches for the trackpad. Her hand passes through the interface like smoke.</Text>
+    </Paragraph>
+    <Paragraph Type="Transition">
+      <Text>CUT TO BLACK.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Silence. Then — a single ENTER key, somewhere, in an empty office… clicked.</Text>
+    </Paragraph>
+  </Content>
+  <TitlePage>
+    <Content>
+      <Paragraph Alignment="Center" Type="Custom">
+        <Text>OVERNIGHT TERROR</Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" Type="Custom"><Text>Screenplay by A. Router</Text></Paragraph>
+      
+    </Content>
+  </TitlePage>
+</FinalDraft>

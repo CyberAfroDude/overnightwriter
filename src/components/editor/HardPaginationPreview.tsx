@@ -48,13 +48,14 @@ export default function HardPaginationPreview({ blocks }: Props) {
   const [showDebug, setShowDebug] = useState(false)
 
   return (
-    <div style={{ width: '100%', padding: '24px', overflowY: 'auto', background: '#fafafa' }}>
+    <div data-testid="hard-pagination-preview" style={{ width: '100%', padding: '24px', overflowY: 'auto', background: '#fafafa' }}>
       <div style={{ width: '100%', maxWidth: '8.5in', margin: '0 auto 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', color: '#888', letterSpacing: '0.08em' }}>
           HARD PAGINATION PREVIEW
         </span>
         <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontFamily: '"DM Mono", monospace', fontSize: '10px', color: '#666', letterSpacing: '0.08em', cursor: 'pointer' }}>
           <input
+            data-testid="hard-pagination-debug-toggle"
             type="checkbox"
             checked={showDebug}
             onChange={e => setShowDebug(e.target.checked)}

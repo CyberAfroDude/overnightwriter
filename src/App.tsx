@@ -7,7 +7,6 @@ import NewScript from './pages/NewScript'
 import Editor from './pages/Editor'
 import ApiKeys from './pages/ApiKeys'
 import Settings from './pages/Settings'
-import AdBanner from './components/ads/AdBanner'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -35,7 +34,6 @@ function AppRoutes() {
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <AdBanner />
     </>
   )
 }

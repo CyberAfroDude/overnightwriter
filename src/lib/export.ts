@@ -27,7 +27,7 @@ export function exportFountain(script: Script, draft: Draft) {
   downloadFile(`${script.title} - Draft ${draft.draft_number}.fountain`, buildFountainSource(script, draft), 'text/plain')
 }
 
-export function exportTXT(script: Script, draft: Draft) {
+export function buildPlainTextExport(script: Script, draft: Draft): string {
   const titleSection = buildTitlePageText(script)
   const body = draft.content.map(b => {
     switch (b.type) {
@@ -40,11 +40,14 @@ export function exportTXT(script: Script, draft: Draft) {
     }
   }).join('\n').trim()
 
-  const full = titleSection + '\n\n---\n\n' + body
-  downloadFile(`${script.title} - Draft ${draft.draft_number}.txt`, full, 'text/plain')
+  return titleSection + '\n\n---\n\n' + body
 }
 
-export function exportFDX(script: Script, draft: Draft) {
+export function exportTXT(script: Script, draft: Draft) {
+  downloadFile(`${script.title} - Draft ${draft.draft_number}.txt`, buildPlainTextExport(script, draft), 'text/plain')
+}
+
+export function buildFdxDocument(script: Script, draft: Draft): string {
   const screenplayBy = script.writers.filter((w: Writer) => w.credit === 'Screenplay By')
   const storyBy = script.writers.filter((w: Writer) => w.credit === 'Story By')
 
@@ -69,7 +72,7 @@ export function exportFDX(script: Script, draft: Draft) {
     ? `<Paragraph Alignment="Center" Type="Custom"><Text>Story by ${escapeXml(storyBy.map((w: Writer) => w.name).join(' &amp; '))}</Text></Paragraph>`
     : ''
 
-  const fdx = `<?xml version="1.0" encoding="UTF-8"?>
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <FinalDraft DocumentType="Script" Template="No" Version="1">
   <Content>
 ${elements}
@@ -84,11 +87,13 @@ ${elements}
     </Content>
   </TitlePage>
 </FinalDraft>`
-
-  downloadFile(`${script.title} - Draft ${draft.draft_number}.fdx`, fdx, 'text/xml')
 }
 
-export async function exportPDF(script: Script, draft: Draft) {
+export function exportFDX(script: Script, draft: Draft) {
+  downloadFile(`${script.title} - Draft ${draft.draft_number}.fdx`, buildFdxDocument(script, draft), 'text/xml')
+}
+
+export async function buildScreenplayPdfJsDoc(script: Script, draft: Draft) {
   const { jsPDF } = await import('jspdf')
   const doc = new jsPDF({ unit: 'in', format: 'letter' })
   const { margin, pageWidth, lineHeight } = SCREENPLAY_PDF_LAYOUT
@@ -96,7 +101,6 @@ export async function exportPDF(script: Script, draft: Draft) {
   doc.setFont('Courier', 'normal')
   doc.setFontSize(12)
 
-  // Title page
   const screenplayBy = script.writers.filter((w: Writer) => w.credit === 'Screenplay By')
   const storyBy = script.writers.filter((w: Writer) => w.credit === 'Story By')
 
@@ -126,7 +130,6 @@ export async function exportPDF(script: Script, draft: Draft) {
     doc.text(line, margin.left, 9 + i * lineHeight * 1.5)
   })
 
-  // Script pages
   doc.addPage()
   doc.setFontSize(12)
   const pages = paginateBlocksHard(draft.content).pages
@@ -180,6 +183,11 @@ export async function exportPDF(script: Script, draft: Draft) {
     })
   })
 
+  return doc
+}
+
+export async function exportPDF(script: Script, draft: Draft) {
+  const doc = await buildScreenplayPdfJsDoc(script, draft)
   doc.save(`${script.title} - Draft ${draft.draft_number}.pdf`)
 }
 

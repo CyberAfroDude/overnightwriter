@@ -1,10 +1,9 @@
 import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { flushSync } from 'react-dom'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useScripts, useDraft } from '../hooks/useScripts'
 import { useAutosave } from '../hooks/useAutosave'
 import { useAuth } from '../hooks/useAuth'
-import { useSubscription } from '../hooks/useSubscription'
 import { useViewport } from '../hooks/useViewport'
 import { supabase } from '../lib/supabase'
 import { Script, DraftBlock, ElementType } from '../types'
@@ -16,7 +15,6 @@ import AIGenerateBar from '../components/editor/AIGenerateBar'
 import HardPaginationPreview from '../components/editor/HardPaginationPreview'
 import PricingModal from '../components/pricing/PricingModal'
 import { exportFountain, exportTXT, exportFDX, exportPDF } from '../lib/export'
-import { canAccess } from '../lib/config'
 import { v4 as uuidv4 } from 'uuid'
 import { normalizeDraftBlocks } from '../lib/editor/screenplayDocAdapter'
 import { blocksToFountain } from '../lib/editor/fountainProjection'
@@ -79,8 +77,8 @@ function parsePastedText(text: string): DraftBlock[] {
 export default function Editor() {
   const { scriptId, draftNumber } = useParams()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { user } = useAuth()
-  const { plan } = useSubscription()
   const { scripts, fetchScripts, deleteScript, createScript } = useScripts()
   const { draft, loading, saveDraft, createNewDraft, deleteDraft } = useDraft(
     scriptId || null,
@@ -109,7 +107,10 @@ export default function Editor() {
   const isSwitchingRef = useRef(false)
   const editorScrollRef = useRef<HTMLDivElement>(null)
   const importInputRef = useRef<HTMLInputElement>(null)
-  const { isMobile } = useViewport()
+  const { isMobile: viewportIsMobile } = useViewport()
+  /** `?qa=1` forces desktop toolbar + panels for E2E and narrow viewports (does not replace real mobile UX). */
+  const qaForceDesktop = searchParams.get('qa') === '1'
+  const isMobile = viewportIsMobile && !qaForceDesktop
 
   const replaceBlocksFromParent = useCallback((nextBlocks: BlocksReplacement) => {
     setBlocks(currentBlocks => {
@@ -296,8 +297,7 @@ export default function Editor() {
   )].sort()
   const fountainSource = blocksToFountain(blocks)
 
-  const showAds = !canAccess(plan, 'nomad')
-  const adHeight = showAds ? 60 : 0
+  const adHeight = 0
 
   if (loading || !script || !draft) {
     return (
@@ -361,7 +361,10 @@ export default function Editor() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
         {/* Topbar */}
-        <div style={{ display: 'flex', alignItems: 'center', padding: isMobile ? '10px 12px' : '10px 16px', borderBottom: '0.5px solid #e8e8e8', gap: isMobile ? '6px' : '10px', flexShrink: 0 }}>
+        <div
+          data-testid="editor-topbar"
+          style={{ display: 'flex', alignItems: 'center', padding: isMobile ? '10px 12px' : '10px 16px', borderBottom: '0.5px solid #e8e8e8', gap: isMobile ? '6px' : '10px', flexShrink: 0 }}
+        >
           <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 }}>
             <span style={{ display: 'block', width: '18px', height: '1px', background: '#111' }} />
             <span style={{ display: 'block', width: '18px', height: '1px', background: '#111' }} />
@@ -384,9 +387,10 @@ export default function Editor() {
             )}
 
             {/* Floppy save */}
-            <button onClick={handleManualSave} style={iconBtnStyle} title="Save"><FloppyIcon /></button>
+            <button data-testid="editor-btn-save" onClick={handleManualSave} style={iconBtnStyle} title="Save"><FloppyIcon /></button>
             <input
               ref={importInputRef}
+              data-testid="editor-file-input"
               type="file"
               accept=".owx,.fountain,.txt,text/plain,application/json"
               onChange={handleFileImport}
@@ -395,6 +399,7 @@ export default function Editor() {
 
             {!isMobile && (
               <button
+                data-testid="editor-btn-import"
                 onClick={() => importInputRef.current?.click()}
                 style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: '0.5px solid #e8e8e8' }}
                 title="Import File (.owx/.fountain/.txt)"
@@ -405,6 +410,7 @@ export default function Editor() {
 
             {!isMobile && (
               <button
+                data-testid="editor-btn-pages"
                 onClick={() => setShowHardPaginationPanel(!showHardPaginationPanel)}
                 title="Hard Pagination Preview"
                 style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: showHardPaginationPanel ? '#111' : '#aaa', padding: '5px 8px', border: showHardPaginationPanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
@@ -415,6 +421,7 @@ export default function Editor() {
 
             {!isMobile && (
               <button
+                data-testid="editor-btn-source"
                 onClick={() => setShowFountainPanel(!showFountainPanel)}
                 title="Fountain Source"
                 style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: showFountainPanel ? '#111' : '#aaa', padding: '5px 8px', border: showFountainPanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
@@ -462,9 +469,13 @@ export default function Editor() {
 
             {/* Export */}
             <div style={{ position: 'relative' }}>
-              <button onClick={() => setExportOpen(!exportOpen)} style={iconBtnStyle} title="Export"><ExportIcon /></button>
+              <button data-testid="editor-btn-export" onClick={() => setExportOpen(!exportOpen)} style={iconBtnStyle} title="Export"><ExportIcon /></button>
               {exportOpen && (
-                <div style={{ position: 'absolute', top: '30px', right: 0, background: '#fff', border: '0.5px solid #e5e5e5', minWidth: '150px', zIndex: 50 }} onMouseLeave={() => setExportOpen(false)}>
+                <div
+                  data-testid="editor-export-menu"
+                  style={{ position: 'absolute', top: '30px', right: 0, background: '#fff', border: '0.5px solid #e5e5e5', minWidth: '150px', zIndex: 50 }}
+                  onMouseLeave={() => setExportOpen(false)}
+                >
                   {[
                     { label: 'OvernightWriter', ext: '.owx', format: 'owx' },
                     { label: 'PDF', ext: '.pdf', format: 'pdf' },
@@ -472,8 +483,12 @@ export default function Editor() {
                     { label: 'Final Draft', ext: '.fdx', format: 'fdx' },
                     { label: 'Plain Text', ext: '.txt', format: 'txt' },
                   ].map(opt => (
-                    <div key={opt.format} onClick={() => handleExport(opt.format)}
-                      style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.06em', padding: '10px 16px', color: '#555', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+                    <div
+                      key={opt.format}
+                      data-testid={`editor-export-option-${opt.format}`}
+                      onClick={() => handleExport(opt.format)}
+                      style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.06em', padding: '10px 16px', color: '#555', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}
+                    >
                       <span>{opt.label}</span>
                       <span style={{ color: '#ccc', fontSize: '9px' }}>{opt.ext}</span>
                     </div>
@@ -488,7 +503,7 @@ export default function Editor() {
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
           {/* Page area */}
-          {showHardPaginationPanel && !isMobile ? (
+          {showHardPaginationPanel ? (
             <HardPaginationPreview blocks={blocks} />
           ) : (
             <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 24px', background: '#fff', paddingBottom: `${adHeight + 40}px` }}>
