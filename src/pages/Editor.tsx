@@ -13,6 +13,7 @@ import { ELEMENT_LABELS } from '../components/editor/screenplayModel'
 import TitlePage from '../components/editor/TitlePage'
 import EditorSidebar from '../components/editor/EditorSidebar'
 import AIGenerateBar from '../components/editor/AIGenerateBar'
+import HardPaginationPreview from '../components/editor/HardPaginationPreview'
 import PricingModal from '../components/pricing/PricingModal'
 import { exportFountain, exportTXT, exportFDX, exportPDF } from '../lib/export'
 import { canAccess } from '../lib/config'
@@ -98,6 +99,7 @@ export default function Editor() {
   const [pricingOpen, setPricingOpen] = useState(false)
   const [showScenePanel, setShowScenePanel] = useState(false)
   const [showFountainPanel, setShowFountainPanel] = useState(false)
+  const [showHardPaginationPanel, setShowHardPaginationPanel] = useState(false)
   const [showTitlePageEditor, setShowTitlePageEditor] = useState(false)
   const [editTitle, setEditTitle] = useState('')
   const [editWriters, setEditWriters] = useState<{name: string, credit: string}[]>([])
@@ -387,6 +389,16 @@ export default function Editor() {
 
             {!isMobile && (
               <button
+                onClick={() => setShowHardPaginationPanel(!showHardPaginationPanel)}
+                title="Hard Pagination Preview"
+                style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: showHardPaginationPanel ? '#111' : '#aaa', padding: '5px 8px', border: showHardPaginationPanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
+              >
+                Pages
+              </button>
+            )}
+
+            {!isMobile && (
+              <button
                 onClick={() => setShowFountainPanel(!showFountainPanel)}
                 title="Fountain Source"
                 style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: showFountainPanel ? '#111' : '#aaa', padding: '5px 8px', border: showFountainPanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
@@ -459,38 +471,42 @@ export default function Editor() {
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
           {/* Page area */}
-          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 24px', background: '#fff', paddingBottom: `${adHeight + 40}px` }}>
+          {showHardPaginationPanel && !isMobile ? (
+            <HardPaginationPreview blocks={blocks} />
+          ) : (
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 24px', background: '#fff', paddingBottom: `${adHeight + 40}px` }}>
 
-            {/* Title page */}
-            <div style={{
-              width: '100%', maxWidth: '8.5in',
-              background: '#fff',
-              border: '0.5px solid #d0d0d0',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.04)',
-              marginBottom: '24px'
-            }}>
-              <TitlePage script={script} />
+              {/* Title page */}
+              <div style={{
+                width: '100%', maxWidth: '8.5in',
+                background: '#fff',
+                border: '0.5px solid #d0d0d0',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.04)',
+                marginBottom: '24px'
+              }}>
+                <TitlePage script={script} />
+              </div>
+
+              {/* Page break between title page and script */}
+              <div style={{ width: '100%', maxWidth: '8.5in', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '24px' }}>
+                <div style={{ flex: 1, height: '0.5px', background: '#ddd' }} />
+                <span style={{ fontFamily: '"DM Mono", monospace', fontSize: '9px', color: '#ccc', letterSpacing: '0.15em' }}>PAGE 1</span>
+                <div style={{ flex: 1, height: '0.5px', background: '#ddd' }} />
+              </div>
+
+              {/* Screenplay pages */}
+              <ScreenplayEditorV2
+                documentKey={draft.id}
+                contentEpoch={contentEpoch}
+                blocks={blocks}
+                onChange={setBlocks}
+                onElementChange={setCurrentElement}
+                onPaste={handlePaste}
+              />
+
+              <div style={{ height: '80px' }} />
             </div>
-
-            {/* Page break between title page and script */}
-            <div style={{ width: '100%', maxWidth: '8.5in', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '24px' }}>
-              <div style={{ flex: 1, height: '0.5px', background: '#ddd' }} />
-              <span style={{ fontFamily: '"DM Mono", monospace', fontSize: '9px', color: '#ccc', letterSpacing: '0.15em' }}>PAGE 1</span>
-              <div style={{ flex: 1, height: '0.5px', background: '#ddd' }} />
-            </div>
-
-            {/* Screenplay pages */}
-            <ScreenplayEditorV2
-              documentKey={draft.id}
-              contentEpoch={contentEpoch}
-              blocks={blocks}
-              onChange={setBlocks}
-              onElementChange={setCurrentElement}
-              onPaste={handlePaste}
-            />
-
-            <div style={{ height: '80px' }} />
-          </div>
+          )}
 
           {/* FIX #9: Scene & Character panel */}
           {showScenePanel && !isMobile && (
