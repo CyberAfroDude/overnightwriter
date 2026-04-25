@@ -26,6 +26,51 @@ export interface ScreenplayPage {
   lines: PaginatedLine[]
 }
 
+/**
+ * Hard-pagination contracts
+ * - Canonical source remains DraftBlock[].
+ * - Pagination output is computed view data (segments), never persisted as source-of-truth.
+ */
+export interface PaginationSpec {
+  pageHeightIn: number
+  marginTopIn: number
+  marginBottomIn: number
+  // The line grid is currently fixed-width/courier-oriented.
+  lineHeightIn: number
+}
+
+export interface PaginationStyle {
+  beforeLines: number
+  afterLines: number
+  indentIn: number
+  maxWidthIn: number
+  uppercase?: boolean
+  keepWithNext?: boolean
+}
+
+export interface BlockSegment {
+  segmentId: string
+  blockId: string
+  type: DraftBlock['type']
+  pageIndex: number
+  startLine: number
+  endLine: number
+  lines: string[]
+}
+
+export interface HardPaginatedPage {
+  index: number
+  number: number
+  segments: BlockSegment[]
+  usedLines: number
+}
+
+export interface HardPaginationResult {
+  pages: HardPaginatedPage[]
+  // Index where incremental recomputation can restart (future optimization hook).
+  recomputeFromBlockIndex: number
+}
+
 const bottomY = () => SCREENPLAY_PDF_LAYOUT.pageHeight - SCREENPLAY_PDF_LAYOUT.margin.bottom
 const bodyWidth = () => SCREENPLAY_PDF_LAYOUT.pageWidth - SCREENPLAY_PDF_LAYOUT.margin.left - SCREENPLAY_PDF_LAYOUT.margin.right
 const charsForWidth = (widthInches: number) => Math.max(1, Math.floor(widthInches / SCREENPLAY_PDF_LAYOUT.characterWidth))
@@ -142,4 +187,107 @@ export function paginateScreenplayBlocks(blocks: DraftBlock[]): ScreenplayPage[]
   })
 
   return pages
+}
+
+const DEFAULT_SPEC: PaginationSpec = {
+  pageHeightIn: SCREENPLAY_PDF_LAYOUT.pageHeight,
+  marginTopIn: SCREENPLAY_PDF_LAYOUT.margin.top,
+  marginBottomIn: SCREENPLAY_PDF_LAYOUT.margin.bottom,
+  lineHeightIn: SCREENPLAY_PDF_LAYOUT.lineHeight
+}
+
+function styleForType(type: DraftBlock['type']): PaginationStyle {
+  const fullWidth = bodyWidth()
+  switch (type) {
+    case 'scene-heading':
+      return { beforeLines: 1, afterLines: 0.5, indentIn: 0, maxWidthIn: fullWidth, uppercase: true }
+    case 'action':
+      return { beforeLines: 0, afterLines: 0.5, indentIn: 0, maxWidthIn: fullWidth }
+    case 'character':
+      return { beforeLines: 0.5, afterLines: 0, indentIn: SCREENPLAY_PDF_LAYOUT.characterIndent, maxWidthIn: fullWidth - SCREENPLAY_PDF_LAYOUT.characterIndent, uppercase: true, keepWithNext: true }
+    case 'dialogue':
+      return { beforeLines: 0, afterLines: 0.5, indentIn: SCREENPLAY_PDF_LAYOUT.dialogueIndent, maxWidthIn: fullWidth - 2 }
+    case 'parenthetical':
+      return { beforeLines: 0, afterLines: 0, indentIn: SCREENPLAY_PDF_LAYOUT.parentheticalIndent, maxWidthIn: fullWidth - 2.5, keepWithNext: true }
+    case 'transition':
+      return { beforeLines: 0.5, afterLines: 0.5, indentIn: 0, maxWidthIn: fullWidth, uppercase: true }
+  }
+}
+
+function linesPerPage(spec: PaginationSpec): number {
+  return Math.floor((spec.pageHeightIn - spec.marginTopIn - spec.marginBottomIn) / spec.lineHeightIn)
+}
+
+/**
+ * Starter hard-pagination engine.
+ *
+ * Current behavior:
+ * - Computes deterministic page/segment boundaries against a fixed line grid.
+ * - Splits long blocks by wrapped lines across pages.
+ *
+ * Planned additions:
+ * - widow/orphan tuning
+ * - keep-with-next enforcement for grouped blocks
+ * - incremental recomputation from changed block index
+ */
+export function paginateBlocksHard(
+  blocks: DraftBlock[],
+  spec: PaginationSpec = DEFAULT_SPEC
+): HardPaginationResult {
+  const maxLines = Math.max(1, linesPerPage(spec))
+  const pages: HardPaginatedPage[] = [{ index: 0, number: 1, segments: [], usedLines: 0 }]
+  let segmentCounter = 0
+
+  const currentPage = () => pages[pages.length - 1]
+  const newPage = () => {
+    pages.push({ index: pages.length, number: pages.length + 1, segments: [], usedLines: 0 })
+  }
+  const consume = (count: number) => { currentPage().usedLines += count }
+  const ensureRoom = (needed: number) => {
+    if (currentPage().usedLines + needed <= maxLines) return
+    newPage()
+  }
+
+  blocks.forEach(block => {
+    const raw = block.text || ''
+    if (!raw.trim()) return
+    const style = styleForType(block.type)
+    const normalized = style.uppercase ? raw.toUpperCase() : raw
+    const wrapped = wrapText(normalized, charsForWidth(style.maxWidthIn))
+
+    if (style.beforeLines > 0) {
+      const before = Math.ceil(style.beforeLines)
+      ensureRoom(before)
+      consume(before)
+    }
+
+    let lineIdx = 0
+    while (lineIdx < wrapped.length) {
+      if (currentPage().usedLines >= maxLines) newPage()
+      const capacity = maxLines - currentPage().usedLines
+      const take = Math.max(1, Math.min(capacity, wrapped.length - lineIdx))
+      const slice = wrapped.slice(lineIdx, lineIdx + take)
+      const startLine = lineIdx
+      const endLine = lineIdx + take - 1
+      currentPage().segments.push({
+        segmentId: `${block.id}:${segmentCounter++}`,
+        blockId: block.id,
+        type: block.type,
+        pageIndex: currentPage().index,
+        startLine,
+        endLine,
+        lines: slice
+      })
+      consume(take)
+      lineIdx += take
+    }
+
+    if (style.afterLines > 0) {
+      const after = Math.ceil(style.afterLines)
+      ensureRoom(after)
+      consume(after)
+    }
+  })
+
+  return { pages, recomputeFromBlockIndex: 0 }
 }
