@@ -23,7 +23,7 @@ interface Props {
 
 const SCREENPLAY_BLOCK = 'screenplayBlock'
 const PAGE_HEIGHT = 1056
-const PAGE_GAP = 0
+const PAGE_GAP = 28
 const PAGE_VERTICAL_PADDING = 192 // 1in top + 1in bottom at 96dpi
 
 const createBlockId = () => crypto.randomUUID()
@@ -135,14 +135,52 @@ export default function ScreenplayEditorV2({
   const pageBreakBeforeMap = useMemo(() => {
     const pagesData = paginateBlocksHard(blocks).pages
     const markers = new Map<string, number>()
+    let previousPageLastBlockId: string | null = null
     pagesData.forEach((page, idx) => {
       if (idx === 0) return
-      const firstSegment = page.segments[0]
-      if (!firstSegment?.blockId) return
-      markers.set(firstSegment.blockId, page.number)
+      if (page.segments.length === 0) return
+      const pageMarker =
+        page.segments.find(segment => segment.blockId && segment.blockId !== previousPageLastBlockId) ||
+        page.segments[0]
+      if (pageMarker?.blockId) {
+        markers.set(pageMarker.blockId, page.number)
+      }
+      const lastSegment = page.segments[page.segments.length - 1]
+      previousPageLastBlockId = lastSegment?.blockId || previousPageLastBlockId
     })
     return markers
   }, [blocks])
+  const pageBreakCss = useMemo(() => {
+    if (isMobile) return ''
+    return Array.from(pageBreakBeforeMap.entries())
+      .map(([blockId, pageNumber]) => {
+        const safeBlockId = blockId.replace(/"/g, '\\"')
+        return `
+          .screenplay-prosemirror p[data-block-id="${safeBlockId}"] {
+            margin-top: calc(2.2em + 28px) !important;
+            padding-top: 1.2em;
+            border-top: 1px solid #d0d0d0;
+            position: relative;
+          }
+          .screenplay-prosemirror p[data-block-id="${safeBlockId}"]::before {
+            content: "PAGE ${pageNumber}";
+            position: absolute;
+            top: -0.7em;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: "DM Mono", monospace;
+            font-size: 9px;
+            letter-spacing: 0.12em;
+            color: #b0b0b0;
+            background: #fff;
+            padding: 0 8px;
+            font-style: normal;
+            text-transform: uppercase;
+          }
+        `
+      })
+      .join('\n')
+  }, [isMobile, pageBreakBeforeMap])
 
   const editor = useEditor({
     extensions: [
@@ -229,22 +267,6 @@ export default function ScreenplayEditorV2({
     observer.observe(editor.view.dom)
     return () => observer.disconnect()
   }, [editor, isMobile])
-
-  useEffect(() => {
-    if (!editor?.view?.dom) return
-    const paragraphs = editor.view.dom.querySelectorAll('p[data-block-id]')
-    paragraphs.forEach(paragraph => {
-      const blockId = paragraph.getAttribute('data-block-id') || ''
-      const pageNumber = pageBreakBeforeMap.get(blockId)
-      if (pageNumber) {
-        paragraph.setAttribute('data-page-break-before', 'true')
-        paragraph.setAttribute('data-page-number', String(pageNumber))
-      } else {
-        paragraph.removeAttribute('data-page-break-before')
-        paragraph.removeAttribute('data-page-number')
-      }
-    })
-  }, [editor, pageBreakBeforeMap, blocks])
 
   if (!editor) return null
 
@@ -382,27 +404,7 @@ export default function ScreenplayEditorV2({
           text-align: right;
           margin-top: 0.5em;
         }
-        .screenplay-prosemirror p[data-page-break-before="true"] {
-          margin-top: 2.2em !important;
-          padding-top: 1.2em;
-          border-top: 1px solid #d0d0d0;
-          position: relative;
-        }
-        .screenplay-prosemirror p[data-page-break-before="true"]::before {
-          content: "PAGE " attr(data-page-number);
-          position: absolute;
-          top: -0.7em;
-          left: 50%;
-          transform: translateX(-50%);
-          font-family: "DM Mono", monospace;
-          font-size: 9px;
-          letter-spacing: 0.12em;
-          color: #b0b0b0;
-          background: #fff;
-          padding: 0 8px;
-          font-style: normal;
-          text-transform: uppercase;
-        }
+        ${pageBreakCss}
       `}</style>
     </div>
   )
