@@ -246,17 +246,25 @@ export default function ScreenplayEditorV2({
               />
             ))}
             {Array.from({ length: Math.max(0, pages - 1) }).map((_, idx) => (
-              <div
-                key={`boundary-${idx}`}
-                style={{
-                  position: 'absolute',
-                  top: `${(idx + 1) * PAGE_HEIGHT}px`,
-                  left: '16px',
-                  right: '16px',
-                  height: '0.5px',
-                  background: '#d9d9d9'
-                }}
-              />
+              <div key={`boundary-${idx}`} style={{ position: 'absolute', top: `${(idx + 1) * PAGE_HEIGHT - 12}px`, left: '16px', right: '16px', height: '24px' }}>
+                <div style={{ position: 'absolute', top: '12px', left: 0, right: 0, height: '1px', background: '#d0d0d0' }} />
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: '50%',
+                    top: '2px',
+                    transform: 'translateX(-50%)',
+                    fontFamily: '"DM Mono", monospace',
+                    fontSize: '9px',
+                    letterSpacing: '0.12em',
+                    color: '#b0b0b0',
+                    background: '#fff',
+                    padding: '0 8px'
+                  }}
+                >
+                  PAGE BREAK
+                </div>
+              </div>
             ))}
           </div>
         )}

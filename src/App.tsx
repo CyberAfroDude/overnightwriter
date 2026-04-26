@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import { SubscriptionProvider } from './hooks/useSubscription'
 import Landing from './pages/Landing'
@@ -10,6 +11,18 @@ import Settings from './pages/Settings'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    if (!user) return
+    const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
+    const isReload = navEntry?.type === 'reload'
+    if (!isReload) return
+    if (location.pathname === '/new') return
+    navigate('/new', { replace: true })
+  }, [location.pathname, navigate, user])
+
   if (loading) return null
   if (!user) return <Navigate to="/" replace />
   return <>{children}</>

@@ -313,7 +313,7 @@ export default function Editor() {
       }
 
       setShowFountainPanel(false)
-      setShowHardPaginationPanel(true)
+      setShowHardPaginationPanel(false)
       await fetchScripts()
       navigate(`/editor/${scriptId}/${newDraft.draft_number}`)
     } catch (error) {
@@ -416,7 +416,7 @@ export default function Editor() {
           </button>
 
           <div style={{ fontFamily: '"EB Garamond", serif', fontSize: '14px', letterSpacing: '0.04em', color: '#111', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {script.title} — Draft {draftNumber}
+            OvernightWriter — {script.title} — Draft {draftNumber}
           </div>
 
           <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '9px', letterSpacing: '0.15em', color: '#bbb', border: '0.5px solid #e8e8e8', padding: '3px 8px', textTransform: 'uppercase', flexShrink: 0, whiteSpace: 'nowrap' }}>
@@ -527,7 +527,7 @@ export default function Editor() {
 
             {/* + Script button */}
             {!isMobile && (
-              <button onClick={handleNewScript} style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: '0.5px solid #111' }} title="New Script">
+              <button onClick={handleNewScript} style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: 'none' }} title="New Script">
                 + Script
               </button>
             )}
@@ -554,7 +554,7 @@ export default function Editor() {
             <button
               onClick={() => setGenerateOpen(prev => !prev)}
               title="AI Write (Cmd+G)"
-              style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: generateOpen ? '#fff' : '#111', background: generateOpen ? '#111' : 'transparent', border: '0.5px solid', borderColor: generateOpen ? '#111' : '#111', padding: '4px 10px', gap: '4px' }}
+              style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', background: 'transparent', border: 'none', padding: '4px 10px', gap: '4px' }}
             >
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                 <path d="M5 1L6.2 3.8L9 4.5L6.8 6.8L7.3 9.5L5 8.1L2.7 9.5L3.2 6.8L1 4.5L3.8 3.8L5 1Z" stroke="currentColor" strokeWidth="0.8" fill="none"/>
