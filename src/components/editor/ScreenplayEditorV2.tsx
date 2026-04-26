@@ -22,13 +22,18 @@ interface Props {
 }
 
 const SCREENPLAY_BLOCK = 'screenplayBlock'
-// Industry-standard "decoration-based pagination": page chrome rectangles are
-// rendered AROUND measured DOM positions of page-break blocks, not at fixed
-// pixel intervals. The visible gap between consecutive page rectangles also
-// matches the CSS margin-top applied to the first block of each new page so
-// the "PAGE N" marker sits cleanly between pages instead of inside one.
-const MIN_PAGE_HEIGHT_PX = 1056
-const INTER_PAGE_GAP_PX = 40
+// Industry-standard "anchored page card" pagination (Final Draft / WriterDuet /
+// Movie Magic / Arc Studio pattern):
+//   - Page card rectangles are rendered at FIXED pixel intervals so every page
+//     is always exactly one letter sheet tall, even when content is sparse.
+//   - The first block of each new page is anchored to the top of its page
+//     card via a dynamically-computed `margin-top` so empty space falls
+//     between rectangles, not across them.
+//   - Pressing Enter at the end of a page naturally pushes content onto the
+//     next page card because pagination is recomputed every render and the
+//     anchor margin shrinks as content grows.
+const PAGE_HEIGHT_PX = 1056
+const PAGE_GAP_PX = 40
 
 const createBlockId = () => crypto.randomUUID()
 
@@ -125,7 +130,8 @@ export default function ScreenplayEditorV2({
   onPaste
 }: Props) {
   const { isMobile } = useViewport()
-  const [pageRects, setPageRects] = useState<{ top: number; height: number; pageNumber: number }[]>([])
+  const [pageBreakLayouts, setPageBreakLayouts] = useState<Map<string, { marginTop: number; pageNumber: number }>>(new Map())
+  const prevLayoutsRef = useRef<Map<string, { marginTop: number; pageNumber: number }>>(new Map())
   const [autocompleteItems, setAutocompleteItems] = useState<string[]>([])
   const [autocompleteIndex, setAutocompleteIndex] = useState(0)
   const [autocompletePos, setAutocompletePos] = useState<{ top: number; left: number } | null>(null)
@@ -136,55 +142,44 @@ export default function ScreenplayEditorV2({
     () => [...new Set(blocks.filter(b => b.type === 'character' && b.text.trim()).map(b => b.text.trim().toUpperCase()))].sort(),
     [blocks]
   )
-  const pageBreakBeforeMap = useMemo(() => {
-    const pagesData = paginateBlocksHard(blocks).pages
-    const markers = new Map<string, number>()
+  const paginated = useMemo(() => paginateBlocksHard(blocks).pages, [blocks])
+  // Page breaks: each entry is the first block of a page (page >= 2). The
+  // pagination algorithm decides which block opens each new page; the
+  // measurement effect below decides how far down to push that block.
+  const pageBreakBlockIds = useMemo(() => {
+    const map = new Map<string, number>()
     let previousPageLastBlockId: string | null = null
-    pagesData.forEach((page, idx) => {
-      if (idx === 0) return
+    paginated.forEach((page, idx) => {
+      if (idx === 0) {
+        const last = page.segments[page.segments.length - 1]
+        previousPageLastBlockId = last?.blockId || previousPageLastBlockId
+        return
+      }
       if (page.segments.length === 0) return
-      const pageMarker =
+      const marker =
         page.segments.find(segment => segment.blockId && segment.blockId !== previousPageLastBlockId) ||
         page.segments[0]
-      if (pageMarker?.blockId) {
-        markers.set(pageMarker.blockId, page.number)
+      if (marker?.blockId) {
+        map.set(marker.blockId, page.number)
       }
-      const lastSegment = page.segments[page.segments.length - 1]
-      previousPageLastBlockId = lastSegment?.blockId || previousPageLastBlockId
+      const last = page.segments[page.segments.length - 1]
+      previousPageLastBlockId = last?.blockId || previousPageLastBlockId
     })
-    return markers
-  }, [blocks])
+    return map
+  }, [paginated])
   const pageBreakCss = useMemo(() => {
     if (isMobile) return ''
-    return Array.from(pageBreakBeforeMap.entries())
-      .map(([blockId, pageNumber]) => {
+    return Array.from(pageBreakLayouts.entries())
+      .map(([blockId, layout]) => {
         const safeBlockId = blockId.replace(/"/g, '\\"')
         return `
           .screenplay-prosemirror p[data-block-id="${safeBlockId}"] {
-            margin-top: ${INTER_PAGE_GAP_PX}px !important;
-            position: relative;
-          }
-          .screenplay-prosemirror p[data-block-id="${safeBlockId}"]::before {
-            content: "PAGE ${pageNumber}";
-            position: absolute;
-            top: -28px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-family: "DM Mono", monospace;
-            font-size: 9px;
-            letter-spacing: 0.12em;
-            color: #888;
-            background: #f5f5f5;
-            padding: 4px 12px;
-            border: 0.5px solid #d0d0d0;
-            font-style: normal;
-            text-transform: uppercase;
-            white-space: nowrap;
+            margin-top: ${layout.marginTop}px !important;
           }
         `
       })
       .join('\n')
-  }, [isMobile, pageBreakBeforeMap])
+  }, [isMobile, pageBreakLayouts])
 
   const editor = useEditor({
     extensions: [
@@ -263,65 +258,63 @@ export default function ScreenplayEditorV2({
     ignoreUpdateRef.current = false
   }, [documentKey, contentEpoch, blocks, editor])
 
-  // Measure page chrome positions from the actual DOM. This guarantees the
-  // "PAGE N" marker and the white page card always line up with where the
-  // pagination algorithm says a new page begins, instead of drifting because
-  // of fixed pixel-height assumptions vs. real rendered line heights.
+  // Anchor each page-break block to the top of its fixed-height page card by
+  // computing the margin-top required to push it from its natural offset down
+  // to `pageIndex * (PAGE_HEIGHT + GAP)`. Re-runs after every layout (via
+  // ResizeObserver) so the anchor stays correct as the user types.
   useLayoutEffect(() => {
     if (!editor?.view?.dom) return
     if (isMobile) {
-      setPageRects([])
+      if (prevLayoutsRef.current.size > 0) {
+        prevLayoutsRef.current = new Map()
+        setPageBreakLayouts(new Map())
+      }
       return
     }
-    const host = hostRef.current
-    if (!host) return
 
     const measure = () => {
       const editorEl = editor.view.dom as HTMLElement
-      const hostRect = host.getBoundingClientRect()
-      const editorRect = editorEl.getBoundingClientRect()
-      const editorTopRelativeToHost = editorRect.top - hostRect.top
-      const editorHeight = editorEl.offsetHeight
+      const newLayouts = new Map<string, { marginTop: number; pageNumber: number }>()
 
-      const breaks: { offset: number; pageNumber: number }[] = []
-      pageBreakBeforeMap.forEach((pageNumber, blockId) => {
+      pageBreakBlockIds.forEach((pageNumber, blockId) => {
         const safe = blockId.replace(/"/g, '\\"')
         const el = editorEl.querySelector<HTMLElement>(`p[data-block-id="${safe}"]`)
         if (!el) return
-        const rect = el.getBoundingClientRect()
-        breaks.push({ offset: rect.top - hostRect.top, pageNumber })
-      })
-      breaks.sort((a, b) => a.offset - b.offset)
 
-      const editorBottomRelativeToHost = editorTopRelativeToHost + editorHeight
-      const rects: { top: number; height: number; pageNumber: number }[] = []
-      let prevTop = 0
-      let currentPage = 1
-      for (const b of breaks) {
-        const height = Math.max(0, b.offset - INTER_PAGE_GAP_PX - prevTop)
-        rects.push({ top: prevTop, height, pageNumber: currentPage })
-        prevTop = b.offset
-        currentPage = b.pageNumber
-      }
-      rects.push({
-        top: prevTop,
-        height: Math.max(MIN_PAGE_HEIGHT_PX, editorBottomRelativeToHost - prevTop),
-        pageNumber: currentPage
+        const computed = window.getComputedStyle(el)
+        const appliedMargin = parseFloat(computed.marginTop || '0') || 0
+        const naturalTop = el.offsetTop - appliedMargin
+        const targetTop = (pageNumber - 1) * (PAGE_HEIGHT_PX + PAGE_GAP_PX)
+        const requiredMargin = Math.max(PAGE_GAP_PX, targetTop - naturalTop)
+        newLayouts.set(blockId, { marginTop: requiredMargin, pageNumber })
       })
-      setPageRects(rects)
+
+      const prev = prevLayoutsRef.current
+      let changed = prev.size !== newLayouts.size
+      if (!changed) {
+        newLayouts.forEach((v, k) => {
+          const e = prev.get(k)
+          if (!e || Math.abs(e.marginTop - v.marginTop) > 0.5 || e.pageNumber !== v.pageNumber) {
+            changed = true
+          }
+        })
+      }
+      if (changed) {
+        prevLayoutsRef.current = newLayouts
+        setPageBreakLayouts(newLayouts)
+      }
     }
 
     measure()
     const ro = new ResizeObserver(() => measure())
     ro.observe(editor.view.dom)
     return () => ro.disconnect()
-  }, [editor, blocks, pageBreakBeforeMap, isMobile])
+  }, [editor, blocks, pageBreakBlockIds, isMobile])
 
   if (!editor) return null
 
-  const totalContentHeight = pageRects.length > 0
-    ? pageRects[pageRects.length - 1].top + pageRects[pageRects.length - 1].height
-    : MIN_PAGE_HEIGHT_PX
+  const pageCount = isMobile ? 1 : Math.max(1, paginated.length)
+  const totalContentHeight = pageCount * PAGE_HEIGHT_PX + (pageCount - 1) * PAGE_GAP_PX
 
   return (
     <div style={{ width: '100%', maxWidth: '8.5in', position: 'relative' }}>
@@ -334,20 +327,49 @@ export default function ScreenplayEditorV2({
       >
         {!isMobile && (
           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-            {pageRects.map((rect, idx) => (
+            {Array.from({ length: pageCount }).map((_, idx) => (
               <div
-                key={idx}
+                key={`page-${idx}`}
                 style={{
                   position: 'absolute',
-                  top: `${rect.top}px`,
+                  top: `${idx * (PAGE_HEIGHT_PX + PAGE_GAP_PX)}px`,
                   left: 0,
                   right: 0,
-                  height: `${rect.height}px`,
+                  height: `${PAGE_HEIGHT_PX}px`,
                   border: '0.5px solid #d0d0d0',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.04)',
                   background: '#fff'
                 }}
               />
+            ))}
+            {Array.from({ length: Math.max(0, pageCount - 1) }).map((_, idx) => (
+              <div
+                key={`marker-${idx}`}
+                style={{
+                  position: 'absolute',
+                  top: `${(idx + 1) * (PAGE_HEIGHT_PX + PAGE_GAP_PX) - PAGE_GAP_PX / 2 - 12}px`,
+                  left: 0,
+                  right: 0,
+                  textAlign: 'center',
+                  pointerEvents: 'none'
+                }}
+              >
+                <span
+                  style={{
+                    display: 'inline-block',
+                    fontFamily: '"DM Mono", monospace',
+                    fontSize: '9px',
+                    letterSpacing: '0.12em',
+                    color: '#888',
+                    background: '#f5f5f5',
+                    padding: '4px 12px',
+                    border: '0.5px solid #d0d0d0',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  PAGE {idx + 2}
+                </span>
+              </div>
             ))}
           </div>
         )}
