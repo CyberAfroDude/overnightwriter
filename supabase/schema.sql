@@ -12,9 +12,13 @@ create table if not exists public.scripts (
   contact_email text default '',
   contact_phone text default '',
   draft_count integer not null default 1,
+  import_source text default null,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
+
+-- Backfill column on existing deployments
+alter table public.scripts add column if not exists import_source text default null;
 
 -- Drafts table
 create table if not exists public.drafts (

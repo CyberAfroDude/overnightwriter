@@ -11,6 +11,8 @@ export interface Writer {
   credit: 'Screenplay By' | 'Story By'
 }
 
+export type ImportSource = 'owx' | 'fountain' | 'fdx' | 'txt'
+
 export interface Script {
   id: string
   title: string
@@ -21,6 +23,12 @@ export interface Script {
   created_at: string
   updated_at: string
   draft_count: number
+  /**
+   * If the script was created via the Import flow this records the source format
+   * (`owx`, `fountain`, `fdx`, `txt`). `null`/`undefined` means the script was
+   * authored from scratch in the editor.
+   */
+  import_source?: ImportSource | null
 }
 
 export interface Draft {

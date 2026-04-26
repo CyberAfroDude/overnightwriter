@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useScripts } from '../hooks/useScripts'
 import { supabase } from '../lib/supabase'
-import { Script, DraftBlock, Writer } from '../types'
+import { Script, DraftBlock, Writer, ImportSource } from '../types'
 import { parseOWXImport } from '../lib/editor/owx'
-import { parseFountainToBlocks } from '../lib/editor/fountainImport'
+import { parseFountainImport } from '../lib/editor/fountainImport'
+import { parseFdxImport } from '../lib/editor/fdxImport'
 import { parsePastedText } from '../lib/editor/plainTextImport'
 import { normalizeDraftBlocks } from '../lib/editor/screenplayDocAdapter'
 
@@ -13,6 +14,47 @@ function deriveTitleFromFilename(name: string): string {
   const base = name.replace(/\.[^.]+$/, '')
   const cleaned = base.replace(/[_\-]+/g, ' ').replace(/\s+/g, ' ').trim()
   return cleaned || 'Untitled Script'
+}
+
+const IMPORT_SOURCE_LABEL: Record<string, string> = {
+  owx: 'Imported from .owx',
+  fountain: 'Imported from Fountain',
+  fdx: 'Imported from Final Draft (.fdx)',
+  txt: 'Imported from plain text',
+}
+
+function ImportedBadge({ source }: { source: string }) {
+  const label = IMPORT_SOURCE_LABEL[source] || 'Imported'
+  return (
+    <span
+      title={label}
+      aria-label={label}
+      data-testid="dashboard-imported-indicator"
+      data-import-source={source}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '18px',
+        height: '18px',
+        borderRadius: '50%',
+        background: '#eef2ff',
+        color: '#4f46e5',
+        marginLeft: '8px',
+        flexShrink: 0,
+      }}
+    >
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+        <path
+          d="M5 8.5V2M5 2L2 5M5 2l3 3"
+          stroke="currentColor"
+          strokeWidth="1.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </span>
+  )
 }
 
 export default function Dashboard() {
@@ -62,16 +104,29 @@ export default function Dashboard() {
       let importedBlocks: DraftBlock[] = []
       let importedTitle: string | undefined
       let importedWriters: Writer[] | undefined
+      let importSource: ImportSource
 
       if (name.endsWith('.owx')) {
         const owx = parseOWXImport(source)
         importedBlocks = owx.blocks
         importedTitle = owx.title
         importedWriters = owx.writers
+        importSource = 'owx'
       } else if (name.endsWith('.fountain')) {
-        importedBlocks = parseFountainToBlocks(source)
+        const fountain = parseFountainImport(source)
+        importedBlocks = fountain.blocks
+        importedTitle = fountain.title
+        importedWriters = fountain.writers
+        importSource = 'fountain'
+      } else if (name.endsWith('.fdx')) {
+        const fdx = parseFdxImport(source)
+        importedBlocks = fdx.blocks
+        importedTitle = fdx.title
+        importedWriters = fdx.writers
+        importSource = 'fdx'
       } else {
         importedBlocks = parsePastedText(source)
+        importSource = 'txt'
       }
 
       if (importedBlocks.length === 0) {
@@ -84,7 +139,7 @@ export default function Dashboard() {
         ? importedWriters
         : [{ name: user?.email?.split('@')[0] || 'Writer', credit: 'Screenplay By' }]
 
-      const { script, draft, error } = await createScript(title, writers, '', '')
+      const { script, draft, error } = await createScript(title, writers, '', '', importSource)
       if (error || !script || !draft) {
         window.alert('Unable to create script for import.')
         return
@@ -157,11 +212,13 @@ export default function Dashboard() {
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       padding: '8px 20px',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      gap: '8px'
                     }}
                   >
-                    <span style={{ fontSize: '12px', letterSpacing: '0.03em', color: '#111' }}>
-                      {script.title}
+                    <span style={{ display: 'flex', alignItems: 'center', minWidth: 0, fontSize: '12px', letterSpacing: '0.03em', color: '#111' }}>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{script.title}</span>
+                      {script.import_source && <ImportedBadge source={script.import_source} />}
                     </span>
                     <span style={{ fontSize: '10px', color: '#bbb', letterSpacing: '0.05em', flexShrink: 0 }}>
                       ({script.draft_count})
@@ -323,7 +380,7 @@ export default function Dashboard() {
                 <input
                   ref={importInputRef}
                   type="file"
-                  accept=".owx,.fountain,.txt,text/plain"
+                  accept=".owx,.fountain,.fdx,.txt,text/plain,application/xml,text/xml"
                   onChange={handleImportFile}
                   style={{ display: 'none' }}
                   data-testid="dashboard-import-input"
@@ -363,13 +420,16 @@ export default function Dashboard() {
                     >
                       <div>
                         <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
                           fontFamily: '"EB Garamond", serif',
                           fontSize: '15px',
                           color: '#111',
                           letterSpacing: '0.02em',
                           marginBottom: '2px'
                         }}>
-                          {script.title}
+                          <span>{script.title}</span>
+                          {script.import_source && <ImportedBadge source={script.import_source} />}
                         </div>
                         <div style={{
                           fontFamily: '"DM Mono", monospace',

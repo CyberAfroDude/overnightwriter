@@ -19,8 +19,9 @@ import { exportFountain, exportTXT, exportFDX, exportPDF } from '../lib/export'
 import { v4 as uuidv4 } from 'uuid'
 import { normalizeDraftBlocks } from '../lib/editor/screenplayDocAdapter'
 import { blocksToFountain } from '../lib/editor/fountainProjection'
-import { parseFountainToBlocks } from '../lib/editor/fountainImport'
+import { parseFountainImport } from '../lib/editor/fountainImport'
 import { exportOWX, parseOWXImport } from '../lib/editor/owx'
+import { parseFdxImport } from '../lib/editor/fdxImport'
 import { parsePastedText } from '../lib/editor/plainTextImport'
 
 type BlocksReplacement = DraftBlock[] | ((currentBlocks: DraftBlock[]) => DraftBlock[])
@@ -234,8 +235,17 @@ export default function Editor() {
         importedWriters = owx.writers
         label = 'OWX'
       } else if (name.endsWith('.fountain')) {
-        importedBlocks = parseFountainToBlocks(source)
+        const fountain = parseFountainImport(source)
+        importedBlocks = fountain.blocks
+        importedTitle = fountain.title
+        importedWriters = fountain.writers
         label = 'Fountain'
+      } else if (name.endsWith('.fdx')) {
+        const fdx = parseFdxImport(source)
+        importedBlocks = fdx.blocks
+        importedTitle = fdx.title
+        importedWriters = fdx.writers
+        label = 'Final Draft'
       } else {
         importedBlocks = parsePastedText(source)
         label = 'plain text'
@@ -262,7 +272,7 @@ export default function Editor() {
         .update({ content: normalizedImportedBlocks, updated_at: new Date().toISOString() })
         .eq('id', newDraft.id)
 
-      if (name.endsWith('.owx') && script && (importedTitle || importedWriters)) {
+      if (script && (importedTitle || (importedWriters && importedWriters.length > 0))) {
         const nextTitle = importedTitle || script.title
         const nextWriters = importedWriters && importedWriters.length > 0 ? importedWriters : script.writers
         const { error } = await supabase
@@ -438,7 +448,7 @@ export default function Editor() {
               ref={importInputRef}
               data-testid="editor-file-input"
               type="file"
-              accept=".owx,.fountain,.txt,text/plain,application/json"
+              accept=".owx,.fountain,.fdx,.txt,text/plain,application/json,application/xml,text/xml"
               onChange={handleFileImport}
               style={{ display: 'none' }}
             />

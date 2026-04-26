@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
-import { Script, Draft, DraftBlock, Writer } from '../types'
+import { Script, Draft, DraftBlock, Writer, ImportSource } from '../types'
 import { useAuth } from './useAuth'
 import { v4 as uuidv4 } from 'uuid'
 import { normalizeDraftBlocks } from '../lib/editor/screenplayDocAdapter'
@@ -27,22 +27,39 @@ export function useScripts() {
     title: string,
     writers: Writer[],
     contactEmail: string,
-    contactPhone: string
+    contactPhone: string,
+    importSource: ImportSource | null = null
   ): Promise<{ script: Script | null; draft: Draft | null; error: Error | null }> => {
     if (!user) return { script: null, draft: null, error: new Error('Not authenticated') }
 
-    const { data: scriptData, error: scriptError } = await supabase
-      .from('scripts')
-      .insert({
-        title,
-        writers,
-        contact_email: contactEmail,
-        contact_phone: contactPhone,
-        user_id: user.id,
-        draft_count: 1
-      })
-      .select()
-      .single()
+    const baseInsert = {
+      title,
+      writers,
+      contact_email: contactEmail,
+      contact_phone: contactPhone,
+      user_id: user.id,
+      draft_count: 1,
+    }
+
+    let scriptData: Script | null = null
+    let scriptError: Error | null = null
+    {
+      const { data, error } = await supabase
+        .from('scripts')
+        .insert({ ...baseInsert, import_source: importSource })
+        .select()
+        .single()
+      // Old schemas without the column will reject the insert. Retry without it
+      // so the import flow still works on stale Supabase deployments.
+      if (error && /import_source/i.test(error.message || '')) {
+        const fallback = await supabase.from('scripts').insert(baseInsert).select().single()
+        scriptData = (fallback.data as Script | null) ?? null
+        scriptError = (fallback.error as Error | null) ?? null
+      } else {
+        scriptData = (data as Script | null) ?? null
+        scriptError = (error as Error | null) ?? null
+      }
+    }
 
     if (scriptError || !scriptData) return { script: null, draft: null, error: scriptError as Error }
 
