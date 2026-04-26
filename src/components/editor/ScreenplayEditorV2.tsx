@@ -7,6 +7,7 @@ import Placeholder from '@tiptap/extension-placeholder'
 import { DraftBlock, ElementType } from '../../types'
 import { useViewport } from '../../hooks/useViewport'
 import { docToDraftBlocks, draftBlocksToDoc } from '../../lib/editor/screenplayDocAdapter'
+import { paginateBlocksHard } from '../../lib/editor/screenplayPagination'
 import { defaultNextType, ELEMENT_CYCLE, ELEMENT_PLACEHOLDERS } from './screenplayModel'
 
 interface Props {
@@ -49,6 +50,7 @@ const ScreenplayBlock = Node.create({
     return [
       'p',
       mergeAttributes(HTMLAttributes, {
+        'data-block-id': HTMLAttributes.blockId || '',
         'data-screenplay-type': HTMLAttributes.screenplayType,
         'data-ai-written': HTMLAttributes.aiWritten ? 'true' : 'false'
       }),
@@ -130,6 +132,17 @@ export default function ScreenplayEditorV2({
     () => [...new Set(blocks.filter(b => b.type === 'character' && b.text.trim()).map(b => b.text.trim().toUpperCase()))].sort(),
     [blocks]
   )
+  const pageBreakBeforeMap = useMemo(() => {
+    const pagesData = paginateBlocksHard(blocks).pages
+    const markers = new Map<string, number>()
+    pagesData.forEach((page, idx) => {
+      if (idx === 0) return
+      const firstSegment = page.segments[0]
+      if (!firstSegment?.blockId) return
+      markers.set(firstSegment.blockId, page.number)
+    })
+    return markers
+  }, [blocks])
 
   const editor = useEditor({
     extensions: [
@@ -217,6 +230,22 @@ export default function ScreenplayEditorV2({
     return () => observer.disconnect()
   }, [editor, isMobile])
 
+  useEffect(() => {
+    if (!editor?.view?.dom) return
+    const paragraphs = editor.view.dom.querySelectorAll('p[data-block-id]')
+    paragraphs.forEach(paragraph => {
+      const blockId = paragraph.getAttribute('data-block-id') || ''
+      const pageNumber = pageBreakBeforeMap.get(blockId)
+      if (pageNumber) {
+        paragraph.setAttribute('data-page-break-before', 'true')
+        paragraph.setAttribute('data-page-number', String(pageNumber))
+      } else {
+        paragraph.removeAttribute('data-page-break-before')
+        paragraph.removeAttribute('data-page-number')
+      }
+    })
+  }, [editor, pageBreakBeforeMap, blocks])
+
   if (!editor) return null
 
   return (
@@ -244,27 +273,6 @@ export default function ScreenplayEditorV2({
                   background: '#fff'
                 }}
               />
-            ))}
-            {Array.from({ length: Math.max(0, pages - 1) }).map((_, idx) => (
-              <div key={`boundary-${idx}`} style={{ position: 'absolute', top: `${(idx + 1) * PAGE_HEIGHT - 12}px`, left: '16px', right: '16px', height: '24px' }}>
-                <div style={{ position: 'absolute', top: '12px', left: 0, right: 0, height: '1px', background: '#d0d0d0' }} />
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: '50%',
-                    top: '2px',
-                    transform: 'translateX(-50%)',
-                    fontFamily: '"DM Mono", monospace',
-                    fontSize: '9px',
-                    letterSpacing: '0.12em',
-                    color: '#b0b0b0',
-                    background: '#fff',
-                    padding: '0 8px'
-                  }}
-                >
-                  PAGE BREAK
-                </div>
-              </div>
             ))}
           </div>
         )}
@@ -373,6 +381,27 @@ export default function ScreenplayEditorV2({
           text-transform: uppercase;
           text-align: right;
           margin-top: 0.5em;
+        }
+        .screenplay-prosemirror p[data-page-break-before="true"] {
+          margin-top: 2.2em !important;
+          padding-top: 1.2em;
+          border-top: 1px solid #d0d0d0;
+          position: relative;
+        }
+        .screenplay-prosemirror p[data-page-break-before="true"]::before {
+          content: "PAGE " attr(data-page-number);
+          position: absolute;
+          top: -0.7em;
+          left: 50%;
+          transform: translateX(-50%);
+          font-family: "DM Mono", monospace;
+          font-size: 9px;
+          letter-spacing: 0.12em;
+          color: #b0b0b0;
+          background: #fff;
+          padding: 0 8px;
+          font-style: normal;
+          text-transform: uppercase;
         }
       `}</style>
     </div>
