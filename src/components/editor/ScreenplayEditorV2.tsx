@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { Node, mergeAttributes } from '@tiptap/core'
 import { Plugin } from '@tiptap/pm/state'
@@ -22,9 +22,13 @@ interface Props {
 }
 
 const SCREENPLAY_BLOCK = 'screenplayBlock'
-const PAGE_HEIGHT = 1056
-const PAGE_GAP = 28
-const PAGE_VERTICAL_PADDING = 192 // 1in top + 1in bottom at 96dpi
+// Industry-standard "decoration-based pagination": page chrome rectangles are
+// rendered AROUND measured DOM positions of page-break blocks, not at fixed
+// pixel intervals. The visible gap between consecutive page rectangles also
+// matches the CSS margin-top applied to the first block of each new page so
+// the "PAGE N" marker sits cleanly between pages instead of inside one.
+const MIN_PAGE_HEIGHT_PX = 1056
+const INTER_PAGE_GAP_PX = 40
 
 const createBlockId = () => crypto.randomUUID()
 
@@ -121,7 +125,7 @@ export default function ScreenplayEditorV2({
   onPaste
 }: Props) {
   const { isMobile } = useViewport()
-  const [pages, setPages] = useState(1)
+  const [pageRects, setPageRects] = useState<{ top: number; height: number; pageNumber: number }[]>([])
   const [autocompleteItems, setAutocompleteItems] = useState<string[]>([])
   const [autocompleteIndex, setAutocompleteIndex] = useState(0)
   const [autocompletePos, setAutocompletePos] = useState<{ top: number; left: number } | null>(null)
@@ -157,25 +161,25 @@ export default function ScreenplayEditorV2({
         const safeBlockId = blockId.replace(/"/g, '\\"')
         return `
           .screenplay-prosemirror p[data-block-id="${safeBlockId}"] {
-            margin-top: calc(2.2em + 28px) !important;
-            padding-top: 1.2em;
-            border-top: 1px solid #d0d0d0;
+            margin-top: ${INTER_PAGE_GAP_PX}px !important;
             position: relative;
           }
           .screenplay-prosemirror p[data-block-id="${safeBlockId}"]::before {
             content: "PAGE ${pageNumber}";
             position: absolute;
-            top: -0.7em;
+            top: -28px;
             left: 50%;
             transform: translateX(-50%);
             font-family: "DM Mono", monospace;
             font-size: 9px;
             letter-spacing: 0.12em;
-            color: #b0b0b0;
-            background: #fff;
-            padding: 0 8px;
+            color: #888;
+            background: #f5f5f5;
+            padding: 4px 12px;
+            border: 0.5px solid #d0d0d0;
             font-style: normal;
             text-transform: uppercase;
+            white-space: nowrap;
           }
         `
       })
@@ -259,21 +263,65 @@ export default function ScreenplayEditorV2({
     ignoreUpdateRef.current = false
   }, [documentKey, contentEpoch, blocks, editor])
 
-  useEffect(() => {
-    if (!editor || !hostRef.current) return
-    const updatePages = () => {
-      const contentHeight = editor.view.dom.scrollHeight
-      // Include fixed top/bottom screenplay margins so final lines do not spill into page-end UI.
-      const totalHeight = isMobile ? contentHeight : contentHeight + PAGE_VERTICAL_PADDING
-      setPages(Math.max(1, Math.ceil(totalHeight / PAGE_HEIGHT)))
+  // Measure page chrome positions from the actual DOM. This guarantees the
+  // "PAGE N" marker and the white page card always line up with where the
+  // pagination algorithm says a new page begins, instead of drifting because
+  // of fixed pixel-height assumptions vs. real rendered line heights.
+  useLayoutEffect(() => {
+    if (!editor?.view?.dom) return
+    if (isMobile) {
+      setPageRects([])
+      return
     }
-    updatePages()
-    const observer = new ResizeObserver(updatePages)
-    observer.observe(editor.view.dom)
-    return () => observer.disconnect()
-  }, [editor, isMobile])
+    const host = hostRef.current
+    if (!host) return
+
+    const measure = () => {
+      const editorEl = editor.view.dom as HTMLElement
+      const hostRect = host.getBoundingClientRect()
+      const editorRect = editorEl.getBoundingClientRect()
+      const editorTopRelativeToHost = editorRect.top - hostRect.top
+      const editorHeight = editorEl.offsetHeight
+
+      const breaks: { offset: number; pageNumber: number }[] = []
+      pageBreakBeforeMap.forEach((pageNumber, blockId) => {
+        const safe = blockId.replace(/"/g, '\\"')
+        const el = editorEl.querySelector<HTMLElement>(`p[data-block-id="${safe}"]`)
+        if (!el) return
+        const rect = el.getBoundingClientRect()
+        breaks.push({ offset: rect.top - hostRect.top, pageNumber })
+      })
+      breaks.sort((a, b) => a.offset - b.offset)
+
+      const editorBottomRelativeToHost = editorTopRelativeToHost + editorHeight
+      const rects: { top: number; height: number; pageNumber: number }[] = []
+      let prevTop = 0
+      let currentPage = 1
+      for (const b of breaks) {
+        const height = Math.max(0, b.offset - INTER_PAGE_GAP_PX - prevTop)
+        rects.push({ top: prevTop, height, pageNumber: currentPage })
+        prevTop = b.offset
+        currentPage = b.pageNumber
+      }
+      rects.push({
+        top: prevTop,
+        height: Math.max(MIN_PAGE_HEIGHT_PX, editorBottomRelativeToHost - prevTop),
+        pageNumber: currentPage
+      })
+      setPageRects(rects)
+    }
+
+    measure()
+    const ro = new ResizeObserver(() => measure())
+    ro.observe(editor.view.dom)
+    return () => ro.disconnect()
+  }, [editor, blocks, pageBreakBeforeMap, isMobile])
 
   if (!editor) return null
+
+  const totalContentHeight = pageRects.length > 0
+    ? pageRects[pageRects.length - 1].top + pageRects[pageRects.length - 1].height
+    : MIN_PAGE_HEIGHT_PX
 
   return (
     <div style={{ width: '100%', maxWidth: '8.5in', position: 'relative' }}>
@@ -281,20 +329,20 @@ export default function ScreenplayEditorV2({
         ref={hostRef}
         style={{
           position: 'relative',
-          minHeight: isMobile ? 'auto' : `${pages * PAGE_HEIGHT + (pages - 1) * PAGE_GAP}px`
+          minHeight: isMobile ? 'auto' : `${totalContentHeight}px`
         }}
       >
         {!isMobile && (
           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-            {Array.from({ length: pages }).map((_, idx) => (
+            {pageRects.map((rect, idx) => (
               <div
                 key={idx}
                 style={{
                   position: 'absolute',
-                  top: `${idx * (PAGE_HEIGHT + PAGE_GAP)}px`,
+                  top: `${rect.top}px`,
                   left: 0,
                   right: 0,
-                  height: `${PAGE_HEIGHT}px`,
+                  height: `${rect.height}px`,
                   border: '0.5px solid #d0d0d0',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.04)',
                   background: '#fff'
@@ -308,7 +356,7 @@ export default function ScreenplayEditorV2({
             position: 'relative',
             zIndex: 1,
             padding: isMobile ? '16px' : '1in 1.5in',
-            minHeight: isMobile ? '60vh' : `${pages * PAGE_HEIGHT + (pages - 1) * PAGE_GAP}px`,
+            minHeight: isMobile ? '60vh' : `${totalContentHeight}px`,
             boxSizing: 'border-box'
           }}
         >
