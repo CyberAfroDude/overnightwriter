@@ -1,16 +1,29 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useScripts } from '../hooks/useScripts'
-import { Script } from '../types'
+import { supabase } from '../lib/supabase'
+import { Script, DraftBlock, Writer } from '../types'
+import { parseOWXImport } from '../lib/editor/owx'
+import { parseFountainToBlocks } from '../lib/editor/fountainImport'
+import { parsePastedText } from '../lib/editor/plainTextImport'
+import { normalizeDraftBlocks } from '../lib/editor/screenplayDocAdapter'
+
+function deriveTitleFromFilename(name: string): string {
+  const base = name.replace(/\.[^.]+$/, '')
+  const cleaned = base.replace(/[_\-]+/g, ' ').replace(/\s+/g, ' ').trim()
+  return cleaned || 'Untitled Script'
+}
 
 export default function Dashboard() {
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
-  const { scripts, loading } = useScripts()
+  const { scripts, loading, createScript, fetchScripts } = useScripts()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [expandedScript, setExpandedScript] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [importing, setImporting] = useState(false)
+  const importInputRef = useRef<HTMLInputElement>(null)
 
   const handleScriptClick = (script: Script) => {
     if (expandedScript === script.id) {
@@ -29,6 +42,71 @@ export default function Dashboard() {
     const script = scripts.find(s => s.id === scriptId)
     if (script) {
       navigate(`/editor/${scriptId}/${script.draft_count}`)
+    }
+  }
+
+  const handleImportClick = () => {
+    importInputRef.current?.click()
+  }
+
+  const handleImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+
+    setImporting(true)
+    try {
+      const source = await file.text()
+      const name = file.name.toLowerCase()
+
+      let importedBlocks: DraftBlock[] = []
+      let importedTitle: string | undefined
+      let importedWriters: Writer[] | undefined
+
+      if (name.endsWith('.owx')) {
+        const owx = parseOWXImport(source)
+        importedBlocks = owx.blocks
+        importedTitle = owx.title
+        importedWriters = owx.writers
+      } else if (name.endsWith('.fountain')) {
+        importedBlocks = parseFountainToBlocks(source)
+      } else {
+        importedBlocks = parsePastedText(source)
+      }
+
+      if (importedBlocks.length === 0) {
+        window.alert('Could not parse any screenplay content from this file.')
+        return
+      }
+
+      const title = (importedTitle && importedTitle.trim()) || deriveTitleFromFilename(file.name)
+      const writers: Writer[] = importedWriters && importedWriters.length > 0
+        ? importedWriters
+        : [{ name: user?.email?.split('@')[0] || 'Writer', credit: 'Screenplay By' }]
+
+      const { script, draft, error } = await createScript(title, writers, '', '')
+      if (error || !script || !draft) {
+        window.alert('Unable to create script for import.')
+        return
+      }
+
+      const normalizedBlocks = normalizeDraftBlocks(importedBlocks)
+      const { error: updateError } = await supabase
+        .from('drafts')
+        .update({ content: normalizedBlocks, updated_at: new Date().toISOString() })
+        .eq('id', draft.id)
+
+      if (updateError) {
+        window.alert('Imported script created, but failed to save its content.')
+      }
+
+      await fetchScripts()
+      navigate(`/editor/${script.id}/${draft.draft_number}`)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unable to import file.'
+      window.alert(message)
+    } finally {
+      setImporting(false)
     }
   }
 
@@ -205,23 +283,52 @@ export default function Dashboard() {
             <div style={{ fontSize: '12px', color: '#bbb', letterSpacing: '0.08em' }}>Loading...</div>
           ) : (
             <>
-              <button
-                onClick={() => navigate('/new')}
-                style={{
-                  fontFamily: '"DM Mono", monospace',
-                  fontSize: '11px',
-                  letterSpacing: '0.15em',
-                  padding: '14px 44px',
-                  background: 'transparent',
-                  color: '#111',
-                  border: '0.5px solid #111',
-                  cursor: 'pointer',
-                  textTransform: 'uppercase',
-                  marginBottom: '40px'
-                }}
-              >
-                + New Script
-              </button>
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '40px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <button
+                  onClick={() => navigate('/new')}
+                  data-testid="dashboard-new-script"
+                  style={{
+                    fontFamily: '"DM Mono", monospace',
+                    fontSize: '11px',
+                    letterSpacing: '0.15em',
+                    padding: '14px 44px',
+                    background: 'transparent',
+                    color: '#111',
+                    border: '0.5px solid #111',
+                    cursor: 'pointer',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  + New Script
+                </button>
+                <button
+                  onClick={handleImportClick}
+                  disabled={importing}
+                  data-testid="dashboard-import-script"
+                  style={{
+                    fontFamily: '"DM Mono", monospace',
+                    fontSize: '11px',
+                    letterSpacing: '0.15em',
+                    padding: '14px 44px',
+                    background: 'transparent',
+                    color: importing ? '#888' : '#111',
+                    border: '0.5px solid #111',
+                    cursor: importing ? 'wait' : 'pointer',
+                    textTransform: 'uppercase',
+                    opacity: importing ? 0.7 : 1
+                  }}
+                >
+                  {importing ? 'Importing…' : '+ Import'}
+                </button>
+                <input
+                  ref={importInputRef}
+                  type="file"
+                  accept=".owx,.fountain,.txt,text/plain"
+                  onChange={handleImportFile}
+                  style={{ display: 'none' }}
+                  data-testid="dashboard-import-input"
+                />
+              </div>
 
               {/* FIX #9: Script list below the button */}
               {scripts.length > 0 && (

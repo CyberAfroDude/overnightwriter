@@ -21,6 +21,7 @@ import { normalizeDraftBlocks } from '../lib/editor/screenplayDocAdapter'
 import { blocksToFountain } from '../lib/editor/fountainProjection'
 import { parseFountainToBlocks } from '../lib/editor/fountainImport'
 import { exportOWX, parseOWXImport } from '../lib/editor/owx'
+import { parsePastedText } from '../lib/editor/plainTextImport'
 
 type BlocksReplacement = DraftBlock[] | ((currentBlocks: DraftBlock[]) => DraftBlock[])
 
@@ -40,40 +41,6 @@ const ExportIcon = () => (
     <line x1="2" y1="12" x2="12" y2="12" stroke="currentColor" strokeWidth="1"/>
   </svg>
 )
-
-// FIX #8: Smart paste parser
-function detectElementType(line: string, prevType: ElementType): ElementType {
-  const t = line.trim()
-  if (!t) return 'action'
-  if (/^(INT\.|EXT\.|INT\/EXT\.|I\/E\.)/i.test(t)) return 'scene-heading'
-  if (/^\(.*\)$/.test(t)) return 'parenthetical'
-  if (/^(FADE|CUT TO|SMASH CUT|DISSOLVE|MATCH CUT)/i.test(t)) return 'transition'
-  if (/^[A-Z][A-Z0-9\s'"\-\.]+$/.test(t) && t.length < 50 && !t.includes(',')) {
-    if (prevType === 'dialogue' || prevType === 'parenthetical' || prevType === 'scene-heading' || prevType === 'action') return 'character'
-  }
-  if (prevType === 'character' || prevType === 'parenthetical') return 'dialogue'
-  return 'action'
-}
-
-function parsePastedText(text: string): DraftBlock[] {
-  const lines = text.split('\n')
-  const blocks: DraftBlock[] = []
-  let lastType: ElementType = 'action'
-
-  for (const line of lines) {
-    const trimmed = line.trim()
-    if (!trimmed) continue
-    const type = detectElementType(trimmed, lastType)
-    // Clean up text based on type
-    let cleanText = trimmed
-    if (type === 'scene-heading') cleanText = trimmed.toUpperCase()
-    if (type === 'character') cleanText = trimmed.toUpperCase()
-    if (type === 'parenthetical') cleanText = trimmed.replace(/^\(|\)$/g, '')
-    blocks.push({ id: uuidv4(), type, text: cleanText, ai_written: false })
-    lastType = type
-  }
-  return blocks.length > 0 ? blocks : [{ id: uuidv4(), type: 'scene-heading', text: '', ai_written: false }]
-}
 
 export default function Editor() {
   const { scriptId, draftNumber } = useParams()
