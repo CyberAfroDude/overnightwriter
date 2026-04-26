@@ -33,7 +33,7 @@ const SCREENPLAY_BLOCK = 'screenplayBlock'
 //     next page card because pagination is recomputed every render and the
 //     anchor margin shrinks as content grows.
 const PAGE_HEIGHT_PX = 1056
-const PAGE_GAP_PX = 40
+const PAGE_GAP_PX = 64
 
 const createBlockId = () => crypto.randomUUID()
 
@@ -336,41 +336,57 @@ export default function ScreenplayEditorV2({
                   left: 0,
                   right: 0,
                   height: `${PAGE_HEIGHT_PX}px`,
-                  border: '0.5px solid #d0d0d0',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.04)',
+                  borderRadius: '2px',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.08)',
                   background: '#fff'
                 }}
               />
             ))}
-            {Array.from({ length: Math.max(0, pageCount - 1) }).map((_, idx) => (
-              <div
-                key={`marker-${idx}`}
-                style={{
-                  position: 'absolute',
-                  top: `${(idx + 1) * (PAGE_HEIGHT_PX + PAGE_GAP_PX) - PAGE_GAP_PX / 2 - 12}px`,
-                  left: 0,
-                  right: 0,
-                  textAlign: 'center',
-                  pointerEvents: 'none'
-                }}
-              >
-                <span
+            {Array.from({ length: Math.max(0, pageCount - 1) }).map((_, idx) => {
+              const dividerCenter = (idx + 1) * (PAGE_HEIGHT_PX + PAGE_GAP_PX) - PAGE_GAP_PX / 2
+              return (
+                <div
+                  key={`marker-${idx}`}
                   style={{
-                    display: 'inline-block',
-                    fontFamily: '"DM Mono", monospace',
-                    fontSize: '9px',
-                    letterSpacing: '0.12em',
-                    color: '#888',
-                    background: '#f5f5f5',
-                    padding: '4px 12px',
-                    border: '0.5px solid #d0d0d0',
-                    textTransform: 'uppercase'
+                    position: 'absolute',
+                    top: `${dividerCenter - 1}px`,
+                    left: 0,
+                    right: 0,
+                    height: '2px',
+                    pointerEvents: 'none'
                   }}
+                  aria-hidden="true"
                 >
-                  PAGE {idx + 2}
-                </span>
-              </div>
-            ))}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '0.5px',
+                      left: 0,
+                      right: 0,
+                      borderTop: '1px dashed rgba(0,0,0,0.22)'
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '-9px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      fontFamily: '"DM Mono", monospace',
+                      fontSize: '10px',
+                      letterSpacing: '0.18em',
+                      color: '#6b6b6b',
+                      background: '#ECECEE',
+                      padding: '2px 14px',
+                      textTransform: 'uppercase',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    Page {idx + 2}
+                  </div>
+                </div>
+              )
+            })}
           </div>
         )}
         <div
@@ -430,7 +446,7 @@ export default function ScreenplayEditorV2({
           outline: none;
           font-family: "Courier Prime", "Courier New", Courier, monospace;
           font-size: 12pt;
-          line-height: 1.5;
+          line-height: 1;
           color: #111;
           min-height: 100%;
           white-space: pre-wrap;
@@ -439,7 +455,7 @@ export default function ScreenplayEditorV2({
         }
         .screenplay-prosemirror p {
           margin: 0;
-          min-height: 1.5em;
+          min-height: 1em;
         }
         .screenplay-prosemirror p.is-editor-empty:first-child::before,
         .screenplay-prosemirror p.is-empty::before {
@@ -455,7 +471,7 @@ export default function ScreenplayEditorV2({
         .screenplay-prosemirror p[data-screenplay-type="scene-heading"] {
           text-transform: uppercase;
           letter-spacing: 0.04em;
-          margin-top: 1.2em;
+          margin-top: 1.5em;
         }
         .screenplay-prosemirror p[data-screenplay-type="action"] {
           margin-top: 0.5em;
@@ -463,7 +479,7 @@ export default function ScreenplayEditorV2({
         .screenplay-prosemirror p[data-screenplay-type="character"] {
           text-transform: uppercase;
           padding-left: ${isMobile ? '1in' : '2.2in'};
-          margin-top: 0.8em;
+          margin-top: 1em;
         }
         .screenplay-prosemirror p[data-screenplay-type="dialogue"] {
           padding-left: ${isMobile ? '0.5in' : '1.2in'};
@@ -477,7 +493,7 @@ export default function ScreenplayEditorV2({
         .screenplay-prosemirror p[data-screenplay-type="transition"] {
           text-transform: uppercase;
           text-align: right;
-          margin-top: 0.5em;
+          margin-top: 1em;
         }
         ${pageBreakCss}
       `}</style>

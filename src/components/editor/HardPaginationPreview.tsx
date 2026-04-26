@@ -22,18 +22,18 @@ function renderSegmentLine(type: DraftBlock['type'], line: string, idx: number) 
     margin: 0,
     fontFamily: '"Courier Prime", "Courier New", Courier, monospace',
     fontSize: '12pt',
-    lineHeight: 1.5,
+    lineHeight: 1,
     color: '#111',
     whiteSpace: 'pre-wrap'
   }
 
   const styleByType: Record<DraftBlock['type'], CSSProperties> = {
-    'scene-heading': { textTransform: 'uppercase', fontWeight: 700, marginTop: '0.6em' },
-    action: { marginTop: '0.25em' },
-    character: { textTransform: 'uppercase', paddingLeft: '2.2in', marginTop: '0.4em' },
+    'scene-heading': { textTransform: 'uppercase', fontWeight: 700, marginTop: '1.5em' },
+    action: { marginTop: '0.5em' },
+    character: { textTransform: 'uppercase', paddingLeft: '2.2in', marginTop: '1em' },
     dialogue: { paddingLeft: '1.2in', paddingRight: '1.2in' },
     parenthetical: { fontStyle: 'italic', paddingLeft: '1.7in', paddingRight: '1.7in' },
-    transition: { textTransform: 'uppercase', textAlign: 'right', marginTop: '0.25em' }
+    transition: { textTransform: 'uppercase', textAlign: 'right', marginTop: '1em' }
   }
 
   return (

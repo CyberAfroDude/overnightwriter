@@ -655,7 +655,7 @@ export default function Editor() {
           {showHardPaginationPanel ? (
             <HardPaginationPreview blocks={blocks} />
           ) : (
-            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 24px', background: '#f5f5f5', paddingBottom: `${adHeight + 40}px` }}>
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 24px', background: '#ECECEE', paddingBottom: `${adHeight + 40}px` }}>
 
               {/* Title page */}
               <div style={{
