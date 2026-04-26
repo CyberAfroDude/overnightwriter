@@ -340,6 +340,15 @@ export default function Editor() {
       .map(b => b.text.trim().toUpperCase())
   )].sort()
   const fountainSource = blocksToFountain(blocks)
+  const displayScriptTitle = (script?.title || '').replace(/^OvernightWriter\s+—\s+/i, '')
+
+  useEffect(() => {
+    if (!script || !draftNumber) return
+    document.title = `${displayScriptTitle} — Draft ${draftNumber}`
+    return () => {
+      document.title = 'OvernightWriter'
+    }
+  }, [displayScriptTitle, draftNumber, script])
 
   const adHeight = 0
 
@@ -416,7 +425,7 @@ export default function Editor() {
           </button>
 
           <div style={{ fontFamily: '"EB Garamond", serif', fontSize: '14px', letterSpacing: '0.04em', color: '#111', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {script.title} — Draft {draftNumber}
+            {displayScriptTitle} — Draft {draftNumber}
           </div>
 
           <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '9px', letterSpacing: '0.15em', color: '#bbb', border: '0.5px solid #e8e8e8', padding: '3px 8px', textTransform: 'uppercase', flexShrink: 0, whiteSpace: 'nowrap' }}>
