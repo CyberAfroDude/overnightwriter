@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { Script, Draft, DraftBlock, Writer } from '../types'
 import { useAuth } from './useAuth'
@@ -84,6 +84,7 @@ export function useScripts() {
 export function useDraft(scriptId: string | null, draftNumber: number | null) {
   const [draft, setDraft] = useState<Draft | null>(null)
   const [loading, setLoading] = useState(true)
+  const latestSaveSeqRef = useRef(0)
 
   const fetchDraft = useCallback(async () => {
     if (!scriptId || !draftNumber) { setLoading(false); return }
@@ -106,15 +107,18 @@ export function useDraft(scriptId: string | null, draftNumber: number | null) {
   const saveDraft = async (content: DraftBlock[]) => {
     if (!draft) return
     const normalized = normalizeDraftBlocks(content)
+    const saveSeq = ++latestSaveSeqRef.current
     const { data } = await supabase
       .from('drafts')
       .update({ content: normalized, updated_at: new Date().toISOString() })
       .eq('id', draft.id)
       .select()
       .single()
+    if (saveSeq !== latestSaveSeqRef.current) return
     if (data) {
       setDraft(prev => {
         if (!prev || prev.id !== data.id) return data
+        if (prev.updated_at && data.updated_at && data.updated_at < prev.updated_at) return prev
         return { ...data, content: normalized }
       })
     }

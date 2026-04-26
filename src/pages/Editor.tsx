@@ -94,6 +94,7 @@ export default function Editor() {
   const [exportOpen, setExportOpen] = useState(false)
   const [autosaveEnabled] = useState(true)
   const [showSavedNotice, setShowSavedNotice] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [generateOpen, setGenerateOpen] = useState(false)
   const [pricingOpen, setPricingOpen] = useState(false)
   const [showScenePanel, setShowScenePanel] = useState(false)
@@ -408,6 +409,57 @@ export default function Editor() {
               </button>
             )}
 
+            {isMobile && (
+              <div style={{ position: 'relative' }}>
+                <button
+                  data-testid="editor-btn-mobile-more"
+                  onClick={() => setShowMobileMenu(prev => !prev)}
+                  style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: '0.5px solid #e8e8e8' }}
+                  title="More"
+                >
+                  More
+                </button>
+                {showMobileMenu && (
+                  <div
+                    data-testid="editor-mobile-menu"
+                    style={{ position: 'absolute', top: '30px', right: 0, background: '#fff', border: '0.5px solid #e5e5e5', minWidth: '140px', zIndex: 120 }}
+                    onMouseLeave={() => setShowMobileMenu(false)}
+                  >
+                    <div
+                      data-testid="editor-mobile-option-import"
+                      onClick={() => {
+                        setShowMobileMenu(false)
+                        importInputRef.current?.click()
+                      }}
+                      style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.06em', padding: '10px 14px', color: '#555', cursor: 'pointer' }}
+                    >
+                      Import
+                    </div>
+                    <div
+                      data-testid="editor-mobile-option-pages"
+                      onClick={() => {
+                        setShowHardPaginationPanel(prev => !prev)
+                        setShowMobileMenu(false)
+                      }}
+                      style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.06em', padding: '10px 14px', color: '#555', cursor: 'pointer' }}
+                    >
+                      {showHardPaginationPanel ? 'Hide Pages' : 'Pages'}
+                    </div>
+                    <div
+                      data-testid="editor-mobile-option-source"
+                      onClick={() => {
+                        setShowFountainPanel(prev => !prev)
+                        setShowMobileMenu(false)
+                      }}
+                      style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.06em', padding: '10px 14px', color: '#555', cursor: 'pointer' }}
+                    >
+                      {showFountainPanel ? 'Hide Source' : 'Source'}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {!isMobile && (
               <button
                 data-testid="editor-btn-pages"
@@ -500,7 +552,7 @@ export default function Editor() {
         </div>
 
         {/* Main content area */}
-        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
 
           {/* Page area */}
           {showHardPaginationPanel ? (
@@ -569,11 +621,35 @@ export default function Editor() {
             </div>
           )}
 
-          {showFountainPanel && !isMobile && (
-            <div style={{ width: '320px', borderLeft: '0.5px solid #e8e8e8', overflowY: 'auto', flexShrink: 0, background: '#fff', display: 'flex', flexDirection: 'column' }}>
+          {showFountainPanel && (
+            <div
+              style={{
+                width: isMobile ? '100%' : '320px',
+                borderLeft: isMobile ? 'none' : '0.5px solid #e8e8e8',
+                borderTop: isMobile ? '0.5px solid #e8e8e8' : 'none',
+                overflowY: 'auto',
+                flexShrink: 0,
+                background: '#fff',
+                display: 'flex',
+                flexDirection: 'column',
+                position: isMobile ? 'absolute' : 'relative',
+                inset: isMobile ? 0 : undefined,
+                zIndex: isMobile ? 130 : undefined
+              }}
+            >
               <div style={{ padding: '14px 16px', borderBottom: '0.5px solid #f0f0f0', flexShrink: 0 }}>
-                <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '9px', letterSpacing: '0.15em', color: '#aaa', textTransform: 'uppercase' }}>
-                  Fountain Source
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                  <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '9px', letterSpacing: '0.15em', color: '#aaa', textTransform: 'uppercase' }}>
+                    Fountain Source
+                  </div>
+                  {isMobile && (
+                    <button
+                      onClick={() => setShowFountainPanel(false)}
+                      style={{ ...iconBtnStyle, padding: '2px 6px', border: '0.5px solid #e8e8e8', fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace' }}
+                    >
+                      Close
+                    </button>
+                  )}
                 </div>
                 <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '9px', color: '#bbb', marginTop: '6px', lineHeight: 1.5 }}>
                   Read-only projection from screenplay blocks.
