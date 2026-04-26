@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { flushSync } from 'react-dom'
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useScripts, useDraft } from '../hooks/useScripts'
 import { useAutosave } from '../hooks/useAutosave'
 import { useAuth } from '../hooks/useAuth'
 import { useViewport } from '../hooks/useViewport'
+import { useEditorQaMode } from '../hooks/useEditorQaMode'
 import { supabase } from '../lib/supabase'
 import { Script, DraftBlock, ElementType } from '../types'
 import ScreenplayEditorV2 from '../components/editor/ScreenplayEditorV2'
@@ -77,7 +78,6 @@ function parsePastedText(text: string): DraftBlock[] {
 export default function Editor() {
   const { scriptId, draftNumber } = useParams()
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
   const { user } = useAuth()
   const { scripts, fetchScripts, deleteScript, createScript } = useScripts()
   const { draft, loading, saveDraft, createNewDraft, deleteDraft } = useDraft(
@@ -110,7 +110,7 @@ export default function Editor() {
   const importInputRef = useRef<HTMLInputElement>(null)
   const { isMobile: viewportIsMobile } = useViewport()
   /** `?qa=1` forces desktop toolbar + panels for E2E and narrow viewports (does not replace real mobile UX). */
-  const qaForceDesktop = searchParams.get('qa') === '1'
+  const { qaForceDesktop } = useEditorQaMode()
   const isMobile = viewportIsMobile && !qaForceDesktop
 
   const replaceBlocksFromParent = useCallback((nextBlocks: BlocksReplacement) => {
