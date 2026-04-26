@@ -367,6 +367,20 @@ export default function Editor() {
     padding: '5px 7px', color: '#111', display: 'flex', alignItems: 'center',
     justifyContent: 'center', position: 'relative' as const
   }
+  const textBtnStyle: React.CSSProperties = {
+    ...iconBtnStyle,
+    fontSize: '9px',
+    letterSpacing: '0.1em',
+    fontFamily: '"DM Mono", monospace',
+    color: '#111',
+    padding: '5px 8px',
+    border: '0.5px solid #111',
+    transition: 'background-color 120ms ease, color 120ms ease'
+  }
+  const handleTextButtonHover = (event: React.MouseEvent<HTMLElement>, isHovering: boolean) => {
+    event.currentTarget.style.background = isHovering ? '#111' : 'transparent'
+    event.currentTarget.style.color = isHovering ? '#fff' : '#111'
+  }
 
   // Mobile-responsive styles
   const sidebarWidth = isMobile ? '100%' : '224px'
@@ -517,8 +531,10 @@ export default function Editor() {
               <button
                 data-testid="editor-btn-pages"
                 onClick={() => setShowHardPaginationPanel(!showHardPaginationPanel)}
+                onMouseEnter={e => handleTextButtonHover(e, true)}
+                onMouseLeave={e => handleTextButtonHover(e, false)}
                 title="Hard Pagination Preview"
-                style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: showHardPaginationPanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
+                style={{ ...textBtnStyle, border: showHardPaginationPanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
               >
                 Pages
               </button>
@@ -528,8 +544,10 @@ export default function Editor() {
               <button
                 data-testid="editor-btn-source"
                 onClick={() => setShowFountainPanel(!showFountainPanel)}
+                onMouseEnter={e => handleTextButtonHover(e, true)}
+                onMouseLeave={e => handleTextButtonHover(e, false)}
                 title="Fountain Source"
-                style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: showFountainPanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
+                style={{ ...textBtnStyle, border: showFountainPanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
               >
                 Source
               </button>
@@ -539,35 +557,68 @@ export default function Editor() {
             {!isMobile && (
               <button
                 onClick={() => setShowScenePanel(!showScenePanel)}
+                onMouseEnter={e => handleTextButtonHover(e, true)}
+                onMouseLeave={e => handleTextButtonHover(e, false)}
                 title="Scenes & Characters"
-                style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: showScenePanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
+                style={{ ...textBtnStyle, border: showScenePanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
               >
                 ¶
+              </button>
+            )}
+
+            {!isMobile && (
+              <button
+                data-testid="editor-btn-import"
+                onClick={() => importInputRef.current?.click()}
+                onMouseEnter={e => handleTextButtonHover(e, true)}
+                onMouseLeave={e => handleTextButtonHover(e, false)}
+                title="Import File (.owx/.fountain/.txt)"
+                style={textBtnStyle}
+              >
+                Import
               </button>
             )}
 
             {/* AI generate */}
             <button
               onClick={() => setGenerateOpen(prev => !prev)}
+              onMouseEnter={e => handleTextButtonHover(e, true)}
+              onMouseLeave={e => handleTextButtonHover(e, false)}
               title="AI Write (Cmd+G)"
-              style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', background: 'transparent', border: '0.5px solid #111', padding: '4px 10px', gap: '4px' }}
+              style={{ ...textBtnStyle, padding: '4px 10px', gap: '4px' }}
             >
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <path d="M5 1L6.2 3.8L9 4.5L6.8 6.8L7.3 9.5L5 8.1L2.7 9.5L3.2 6.8L1 4.5L3.8 3.8L5 1Z" stroke="currentColor" strokeWidth="0.8" fill="none"/>
+                <path d="M5 1L6.2 3.8L9 4.5L6.8 6.8L7.3 9.5L5 8.1L2.7 9.5L3.2 6.8L1 4.5L3.8 3.8L5 1Z" stroke="#2563eb" strokeWidth="0.8" fill="none"/>
               </svg>
               AI
             </button>
 
             {/* + Script button */}
             {!isMobile && (
-              <button onClick={handleNewScript} style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: '0.5px solid #111' }} title="New Script">
+              <button
+                onClick={handleNewScript}
+                onMouseEnter={e => handleTextButtonHover(e, true)}
+                onMouseLeave={e => handleTextButtonHover(e, false)}
+                style={textBtnStyle}
+                title="New Script"
+              >
                 + Script
               </button>
             )}
 
             {/* Export */}
             <div style={{ position: 'relative' }}>
-              <button data-testid="editor-btn-export" onClick={() => setExportOpen(!exportOpen)} style={iconBtnStyle} title="Export"><ExportIcon /></button>
+              <button
+                data-testid="editor-btn-export"
+                onClick={() => setExportOpen(!exportOpen)}
+                onMouseEnter={e => handleTextButtonHover(e, true)}
+                onMouseLeave={e => handleTextButtonHover(e, false)}
+                style={{ ...textBtnStyle, gap: '6px' }}
+                title="Export"
+              >
+                <span>Export</span>
+                <ExportIcon />
+              </button>
               {exportOpen && (
                 <div
                   data-testid="editor-export-menu"
@@ -575,7 +626,6 @@ export default function Editor() {
                   onMouseLeave={() => setExportOpen(false)}
                 >
                   {[
-                    { label: 'Import', ext: '', format: 'import' },
                     { label: 'OvernightWriter', ext: '.owx', format: 'owx' },
                     { label: 'PDF', ext: '.pdf', format: 'pdf' },
                     { label: 'Fountain', ext: '.fountain', format: 'fountain' },
@@ -585,14 +635,7 @@ export default function Editor() {
                     <div
                       key={opt.format}
                       data-testid={`editor-export-option-${opt.format}`}
-                      onClick={() => {
-                        if (opt.format === 'import') {
-                          setExportOpen(false)
-                          importInputRef.current?.click()
-                          return
-                        }
-                        handleExport(opt.format)
-                      }}
+                      onClick={() => handleExport(opt.format)}
                       style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.06em', padding: '10px 16px', color: '#111', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}
                     >
                       <span>{opt.label}</span>
