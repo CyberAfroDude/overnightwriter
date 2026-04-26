@@ -245,6 +245,19 @@ export default function ScreenplayEditorV2({
                 }}
               />
             ))}
+            {Array.from({ length: Math.max(0, pages - 1) }).map((_, idx) => (
+              <div
+                key={`boundary-${idx}`}
+                style={{
+                  position: 'absolute',
+                  top: `${(idx + 1) * PAGE_HEIGHT}px`,
+                  left: '16px',
+                  right: '16px',
+                  height: '0.5px',
+                  background: '#d9d9d9'
+                }}
+              />
+            ))}
           </div>
         )}
         <div

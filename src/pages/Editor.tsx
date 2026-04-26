@@ -20,7 +20,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { normalizeDraftBlocks } from '../lib/editor/screenplayDocAdapter'
 import { blocksToFountain } from '../lib/editor/fountainProjection'
 import { parseFountainToBlocks } from '../lib/editor/fountainImport'
-import { exportOWX, parseOWXToBlocks } from '../lib/editor/owx'
+import { exportOWX, parseOWXImport } from '../lib/editor/owx'
 
 type BlocksReplacement = DraftBlock[] | ((currentBlocks: DraftBlock[]) => DraftBlock[])
 
@@ -258,8 +258,13 @@ export default function Editor() {
       let importedBlocks: DraftBlock[]
       let label = 'text'
 
+      let importedTitle: string | undefined
+      let importedWriters: Script['writers'] | undefined
       if (name.endsWith('.owx')) {
-        importedBlocks = parseOWXToBlocks(source)
+        const owx = parseOWXImport(source)
+        importedBlocks = owx.blocks
+        importedTitle = owx.title
+        importedWriters = owx.writers
         label = 'OWX'
       } else if (name.endsWith('.fountain')) {
         importedBlocks = parseFountainToBlocks(source)
@@ -269,15 +274,53 @@ export default function Editor() {
         label = 'plain text'
       }
 
-      const shouldImport = window.confirm(`Import ${importedBlocks.length} ${label} blocks? This will replace the current draft content.`)
+      const shouldImport = window.confirm(`Import ${importedBlocks.length} ${label} blocks? A new draft will be created and loaded.`)
       if (!shouldImport) return
-      replaceBlocksFromParent(importedBlocks)
+
+      if (!scriptId || !draft) {
+        window.alert('Unable to import: current script/draft context is missing.')
+        return
+      }
+
+      await saveDraft(blocks)
+      const newDraft = await createNewDraft(scriptId, { ...draft, content: blocks })
+      if (!newDraft) {
+        window.alert('Unable to create a new draft for import.')
+        return
+      }
+
+      const normalizedImportedBlocks = normalizeDraftBlocks(importedBlocks)
+      await supabase
+        .from('drafts')
+        .update({ content: normalizedImportedBlocks, updated_at: new Date().toISOString() })
+        .eq('id', newDraft.id)
+
+      if (name.endsWith('.owx') && script && (importedTitle || importedWriters)) {
+        const nextTitle = importedTitle || script.title
+        const nextWriters = importedWriters && importedWriters.length > 0 ? importedWriters : script.writers
+        const { error } = await supabase
+          .from('scripts')
+          .update({
+            title: nextTitle,
+            writers: nextWriters,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', scriptId)
+
+        if (!error) {
+          setScript(prev => prev ? { ...prev, title: nextTitle, writers: nextWriters } : prev)
+        }
+      }
+
       setShowFountainPanel(false)
+      setShowHardPaginationPanel(true)
+      await fetchScripts()
+      navigate(`/editor/${scriptId}/${newDraft.draft_number}`)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to import file.'
       window.alert(message)
     }
-  }, [replaceBlocksFromParent])
+  }, [blocks, createNewDraft, draft, fetchScripts, navigate, saveDraft, script, scriptId])
 
   // FIX #8: Smart paste handler
   const handlePaste = useCallback((pastedText: string) => {

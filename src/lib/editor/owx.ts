@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
-import { Draft, DraftBlock, ElementType, Script } from '../../types'
+import { Draft, DraftBlock, ElementType, Script, Writer } from '../../types'
 import { normalizeDraftBlocks } from './screenplayDocAdapter'
 
 type OWXBlockType =
@@ -148,6 +148,25 @@ function validateOWX(value: unknown): asserts value is OWXProject {
 }
 
 export function parseOWXToBlocks(source: string): DraftBlock[] {
+  return parseOWXImport(source).blocks
+}
+
+export interface OWXImportPayload {
+  blocks: DraftBlock[]
+  title?: string
+  writers?: Writer[]
+}
+
+function parseWritersFromAuthor(author: string | undefined): Writer[] {
+  if (!author) return []
+  const names = author
+    .split('&')
+    .map(name => name.trim())
+    .filter(Boolean)
+  return names.map(name => ({ name, credit: 'Screenplay By' as const }))
+}
+
+export function parseOWXImport(source: string): OWXImportPayload {
   const parsed = JSON.parse(source) as unknown
   validateOWX(parsed)
   const blocks = parsed.script
@@ -165,5 +184,12 @@ export function parseOWXToBlocks(source: string): DraftBlock[] {
     })
     .filter((block): block is DraftBlock => Boolean(block))
 
-  return normalizeDraftBlocks(blocks)
+  const normalized = normalizeDraftBlocks(blocks)
+  const title = parsed.metadata?.title?.trim() || undefined
+  const writers = parseWritersFromAuthor(parsed.metadata?.author)
+  return {
+    blocks: normalized,
+    title,
+    writers: writers.length > 0 ? writers : undefined
+  }
 }
