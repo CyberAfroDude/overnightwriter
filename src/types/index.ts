@@ -32,10 +32,28 @@ export interface Draft {
   updated_at: string
 }
 
+export type InlineMarkType = 'bold' | 'italic' | 'underline' | 'strike'
+
+export interface InlineMark {
+  type: InlineMarkType
+}
+
+export interface InlineRun {
+  type: 'text'
+  text: string
+  marks?: InlineMark[]
+}
+
 export interface DraftBlock {
   id: string
   type: ElementType
   text: string
+  /**
+   * Optional rich-text representation carrying inline marks (bold/italic/underline/strike).
+   * When present, it is the source of truth for the block's body. `text` is kept as a plain-text
+   * mirror for search, plain exports, and backward compatibility with older drafts.
+   */
+  richText?: InlineRun[]
   ai_written: boolean
 }
 

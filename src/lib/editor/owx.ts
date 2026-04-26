@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
-import { Draft, DraftBlock, ElementType, Script, Writer } from '../../types'
+import { Draft, DraftBlock, ElementType, InlineMarkType, InlineRun, Script, Writer } from '../../types'
 import { normalizeDraftBlocks } from './screenplayDocAdapter'
 
 type OWXBlockType =
@@ -10,10 +10,16 @@ type OWXBlockType =
   | 'parenthetical'
   | 'transition'
 
+interface OWXRun {
+  text: string
+  marks?: InlineMarkType[]
+}
+
 interface OWXBlock {
   id: string
   type: OWXBlockType
   text: string
+  runs?: OWXRun[]
   source: 'human' | 'openclaw'
   created_at: string
   accepted: boolean
@@ -118,14 +124,26 @@ function buildOWXProject(script: Script, draft: Draft, blocks: DraftBlock[]): OW
       rules: [],
       notes: ''
     },
-    script: normalized.map(block => ({
-      id: block.id || uuidv4(),
-      type: toOWXType[block.type],
-      text: block.text,
-      source: block.ai_written ? 'openclaw' : 'human',
-      created_at: now,
-      accepted: true
-    })),
+    script: normalized.map(block => {
+      const owx: OWXBlock = {
+        id: block.id || uuidv4(),
+        type: toOWXType[block.type],
+        text: block.text,
+        source: block.ai_written ? 'openclaw' : 'human',
+        created_at: now,
+        accepted: true
+      }
+      if (block.richText && block.richText.length > 0) {
+        owx.runs = block.richText.map(run => {
+          const out: OWXRun = { text: run.text }
+          if (run.marks && run.marks.length > 0) {
+            out.marks = run.marks.map(m => m.type)
+          }
+          return out
+        })
+      }
+      return owx
+    }),
     ai_sessions: []
   }
 }
@@ -166,6 +184,27 @@ function parseWritersFromAuthor(author: string | undefined): Writer[] {
   return names.map(name => ({ name, credit: 'Screenplay By' as const }))
 }
 
+const SUPPORTED_MARK_TYPES: InlineMarkType[] = ['bold', 'italic', 'underline', 'strike']
+
+function owxRunsToRichText(runs?: OWXRun[]): InlineRun[] | undefined {
+  if (!runs || runs.length === 0) return undefined
+  const out: InlineRun[] = []
+  let hasMark = false
+  runs.forEach(run => {
+    const text = typeof run?.text === 'string' ? run.text : ''
+    if (!text) return
+    const markTypes = Array.isArray(run.marks)
+      ? run.marks.filter((m): m is InlineMarkType => typeof m === 'string' && SUPPORTED_MARK_TYPES.includes(m as InlineMarkType))
+      : []
+    if (markTypes.length > 0) hasMark = true
+    out.push(markTypes.length > 0
+      ? { type: 'text', text, marks: markTypes.map(type => ({ type })) }
+      : { type: 'text', text })
+  })
+  if (out.length === 0 || !hasMark) return undefined
+  return out
+}
+
 export function parseOWXImport(source: string): OWXImportPayload {
   const parsed = JSON.parse(source) as unknown
   validateOWX(parsed)
@@ -175,12 +214,15 @@ export function parseOWXImport(source: string): OWXImportPayload {
       const item = block as Partial<OWXBlock>
       if (typeof item.text !== 'string' || !item.text.trim()) return null
       if (!item.type || !(item.type in toElementType)) return null
-      return {
+      const richText = owxRunsToRichText(item.runs)
+      const next: DraftBlock = {
         id: item.id || uuidv4(),
         type: toElementType[item.type as OWXBlockType],
         text: item.text,
         ai_written: item.source === 'openclaw'
       }
+      if (richText) next.richText = richText
+      return next
     })
     .filter((block): block is DraftBlock => Boolean(block))
 

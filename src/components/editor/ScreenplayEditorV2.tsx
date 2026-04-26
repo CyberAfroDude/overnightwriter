@@ -4,11 +4,13 @@ import { Node, mergeAttributes } from '@tiptap/core'
 import { Plugin } from '@tiptap/pm/state'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
+import Underline from '@tiptap/extension-underline'
 import { DraftBlock, ElementType } from '../../types'
 import { useViewport } from '../../hooks/useViewport'
 import { docToDraftBlocks, draftBlocksToDoc } from '../../lib/editor/screenplayDocAdapter'
 import { paginateBlocksHard } from '../../lib/editor/screenplayPagination'
 import { defaultNextType, ELEMENT_CYCLE, ELEMENT_PLACEHOLDERS } from './screenplayModel'
+import EditorFormattingMenu from './EditorFormattingMenu'
 
 interface Props {
   /** Stable per draft; full editor hydrate only when this or `contentEpoch` changes (Layer 1). */
@@ -194,6 +196,7 @@ export default function ScreenplayEditorV2({
         horizontalRule: false,
         hardBreak: false
       }),
+      Underline,
       ScreenplayBlock,
       Placeholder.configure({
         includeChildren: false,
@@ -342,51 +345,6 @@ export default function ScreenplayEditorV2({
                 }}
               />
             ))}
-            {Array.from({ length: Math.max(0, pageCount - 1) }).map((_, idx) => {
-              const dividerCenter = (idx + 1) * (PAGE_HEIGHT_PX + PAGE_GAP_PX) - PAGE_GAP_PX / 2
-              return (
-                <div
-                  key={`marker-${idx}`}
-                  style={{
-                    position: 'absolute',
-                    top: `${dividerCenter - 1}px`,
-                    left: 0,
-                    right: 0,
-                    height: '2px',
-                    pointerEvents: 'none'
-                  }}
-                  aria-hidden="true"
-                >
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '0.5px',
-                      left: 0,
-                      right: 0,
-                      borderTop: '1px dashed rgba(0,0,0,0.22)'
-                    }}
-                  />
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '-9px',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      fontFamily: '"DM Mono", monospace',
-                      fontSize: '10px',
-                      letterSpacing: '0.18em',
-                      color: '#6b6b6b',
-                      background: '#ECECEE',
-                      padding: '2px 14px',
-                      textTransform: 'uppercase',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    Page {idx + 2}
-                  </div>
-                </div>
-              )
-            })}
           </div>
         )}
         <div
@@ -399,6 +357,7 @@ export default function ScreenplayEditorV2({
           }}
         >
           <EditorContent editor={editor} />
+          <EditorFormattingMenu editor={editor} />
         </div>
       </div>
 
