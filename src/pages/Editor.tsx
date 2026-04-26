@@ -35,8 +35,8 @@ const FloppyIcon = () => (
 
 const ExportIcon = () => (
   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-    <line x1="7" y1="10" x2="7" y2="2" stroke="currentColor" strokeWidth="1"/>
-    <polyline points="4,5 7,2 10,5" stroke="currentColor" strokeWidth="1" fill="none"/>
+    <line x1="7" y1="4" x2="7" y2="12" stroke="currentColor" strokeWidth="1"/>
+    <polyline points="4,9 7,12 10,9" stroke="currentColor" strokeWidth="1" fill="none"/>
     <line x1="2" y1="12" x2="12" y2="12" stroke="currentColor" strokeWidth="1"/>
   </svg>
 )
@@ -424,8 +424,20 @@ export default function Editor() {
             <span style={{ display: 'block', width: '18px', height: '1px', background: '#111' }} />
           </button>
 
-          <div style={{ fontFamily: '"EB Garamond", serif', fontSize: '14px', letterSpacing: '0.04em', color: '#111', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {displayScriptTitle} — Draft {draftNumber}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: '"EB Garamond", serif', fontSize: '14px', letterSpacing: '0.04em', color: '#111', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {displayScriptTitle} — Draft {draftNumber}
+            </div>
+            {!isMobile && (
+              <button
+                data-testid="editor-btn-title-edit"
+                onClick={openTitlePageEditor}
+                style={{ ...iconBtnStyle, padding: '2px 6px', border: '0.5px solid #e8e8e8', fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111' }}
+                title="Edit Title Page"
+              >
+                ✎
+              </button>
+            )}
           </div>
 
           <div style={{ fontFamily: '"DM Mono", monospace', fontSize: '9px', letterSpacing: '0.15em', color: '#bbb', border: '0.5px solid #e8e8e8', padding: '3px 8px', textTransform: 'uppercase', flexShrink: 0, whiteSpace: 'nowrap' }}>
@@ -449,17 +461,6 @@ export default function Editor() {
               onChange={handleFileImport}
               style={{ display: 'none' }}
             />
-
-            {!isMobile && (
-              <button
-                data-testid="editor-btn-import"
-                onClick={() => importInputRef.current?.click()}
-                style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: '0.5px solid #e8e8e8' }}
-                title="Import File (.owx/.fountain/.txt)"
-              >
-                Import
-              </button>
-            )}
 
             {isMobile && (
               <div style={{ position: 'relative' }}>
@@ -517,7 +518,7 @@ export default function Editor() {
                 data-testid="editor-btn-pages"
                 onClick={() => setShowHardPaginationPanel(!showHardPaginationPanel)}
                 title="Hard Pagination Preview"
-                style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: showHardPaginationPanel ? '#111' : '#aaa', padding: '5px 8px', border: showHardPaginationPanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
+                style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: showHardPaginationPanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
               >
                 Pages
               </button>
@@ -528,23 +529,9 @@ export default function Editor() {
                 data-testid="editor-btn-source"
                 onClick={() => setShowFountainPanel(!showFountainPanel)}
                 title="Fountain Source"
-                style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: showFountainPanel ? '#111' : '#aaa', padding: '5px 8px', border: showFountainPanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
+                style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: showFountainPanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
               >
                 Source
-              </button>
-            )}
-
-            {/* + Script button */}
-            {!isMobile && (
-              <button onClick={handleNewScript} style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: 'none' }} title="New Script">
-                + Script
-              </button>
-            )}
-
-            {/* Edit Title Page button */}
-            {!isMobile && (
-              <button onClick={openTitlePageEditor} style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: '0.5px solid #e8e8e8' }} title="Edit Title Page">
-                ✎ Title
               </button>
             )}
 
@@ -553,7 +540,7 @@ export default function Editor() {
               <button
                 onClick={() => setShowScenePanel(!showScenePanel)}
                 title="Scenes & Characters"
-                style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: showScenePanel ? '#111' : '#aaa', padding: '5px 8px', border: showScenePanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
+                style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: showScenePanel ? '0.5px solid #111' : '0.5px solid #e8e8e8' }}
               >
                 ¶
               </button>
@@ -563,13 +550,20 @@ export default function Editor() {
             <button
               onClick={() => setGenerateOpen(prev => !prev)}
               title="AI Write (Cmd+G)"
-              style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', background: 'transparent', border: 'none', padding: '4px 10px', gap: '4px' }}
+              style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', background: 'transparent', border: '0.5px solid #111', padding: '4px 10px', gap: '4px' }}
             >
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                 <path d="M5 1L6.2 3.8L9 4.5L6.8 6.8L7.3 9.5L5 8.1L2.7 9.5L3.2 6.8L1 4.5L3.8 3.8L5 1Z" stroke="currentColor" strokeWidth="0.8" fill="none"/>
               </svg>
               AI
             </button>
+
+            {/* + Script button */}
+            {!isMobile && (
+              <button onClick={handleNewScript} style={{ ...iconBtnStyle, fontSize: '9px', letterSpacing: '0.1em', fontFamily: '"DM Mono", monospace', color: '#111', padding: '5px 8px', border: '0.5px solid #111' }} title="New Script">
+                + Script
+              </button>
+            )}
 
             {/* Export */}
             <div style={{ position: 'relative' }}>
@@ -581,6 +575,7 @@ export default function Editor() {
                   onMouseLeave={() => setExportOpen(false)}
                 >
                   {[
+                    { label: 'Import', ext: '', format: 'import' },
                     { label: 'OvernightWriter', ext: '.owx', format: 'owx' },
                     { label: 'PDF', ext: '.pdf', format: 'pdf' },
                     { label: 'Fountain', ext: '.fountain', format: 'fountain' },
@@ -590,11 +585,18 @@ export default function Editor() {
                     <div
                       key={opt.format}
                       data-testid={`editor-export-option-${opt.format}`}
-                      onClick={() => handleExport(opt.format)}
-                      style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.06em', padding: '10px 16px', color: '#555', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}
+                      onClick={() => {
+                        if (opt.format === 'import') {
+                          setExportOpen(false)
+                          importInputRef.current?.click()
+                          return
+                        }
+                        handleExport(opt.format)
+                      }}
+                      style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.06em', padding: '10px 16px', color: '#111', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}
                     >
                       <span>{opt.label}</span>
-                      <span style={{ color: '#ccc', fontSize: '9px' }}>{opt.ext}</span>
+                      <span style={{ color: '#bbb', fontSize: '9px' }}>{opt.ext}</span>
                     </div>
                   ))}
                 </div>

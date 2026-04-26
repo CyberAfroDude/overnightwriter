@@ -79,8 +79,45 @@ export default function EditorSidebar({ scripts, currentScriptId, currentDraftNu
   return (
     <div style={{ width: '224px', borderRight: '0.5px solid #e8e8e8', display: 'flex', flexDirection: 'column', height: '100%', background: '#fff' }}>
 
+      {/* Sidebar home/logo */}
+      <div style={{ padding: '14px 14px 6px', borderBottom: '0.5px solid #f2f2f2' }}>
+        <button
+          onClick={() => navigate('/dashboard')}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '8px 10px',
+            border: '0.5px solid #e8e8e8',
+            background: '#fff',
+            cursor: 'pointer'
+          }}
+          title="Home"
+        >
+          <span style={{
+            width: '18px',
+            height: '18px',
+            borderRadius: '50%',
+            border: '0.5px solid #111',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontFamily: '"DM Mono", monospace',
+            fontSize: '9px',
+            color: '#111',
+            flexShrink: 0
+          }}>
+            OW
+          </span>
+          <span style={{ fontFamily: '"DM Mono", monospace', fontSize: '10px', letterSpacing: '0.08em', color: '#111', textTransform: 'uppercase' }}>
+            Home
+          </span>
+        </button>
+      </div>
+
       {/* Scripts list */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 0' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 0 12px' }}>
         {scripts.map(script => (
           <div key={script.id}>
             {/* Script row */}

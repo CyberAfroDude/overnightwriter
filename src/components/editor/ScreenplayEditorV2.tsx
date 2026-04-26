@@ -237,6 +237,11 @@ export default function ScreenplayEditorV2({
       setAutocompleteIndex(0)
       setAutocompletePos({ left: coords.left, top: coords.bottom + 4 })
     },
+    onTransaction: ({ editor: e }) => {
+      // Keep ACTION indicator in sync even when selection does not move (e.g. Tab type cycle).
+      const t = (e.getAttributes(SCREENPLAY_BLOCK).screenplayType || 'action') as ElementType
+      onElementChange(t)
+    },
     onUpdate: ({ editor: e }) => {
       if (ignoreUpdateRef.current) return
       onChange(docToDraftBlocks(e.getJSON()))
