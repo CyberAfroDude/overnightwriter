@@ -1,4 +1,5 @@
 import { DraftBlock, Script, Draft, Writer } from '../types'
+import { jsPDF } from 'jspdf'
 import { buildFountainSource } from './editor/fountainProjection'
 import { paginateBlocksHard, SCREENPLAY_PDF_LAYOUT } from './editor/screenplayPagination'
 
@@ -93,8 +94,7 @@ export function exportFDX(script: Script, draft: Draft) {
   downloadFile(`${script.title} - Draft ${draft.draft_number}.fdx`, buildFdxDocument(script, draft), 'text/xml')
 }
 
-export async function buildScreenplayPdfJsDoc(script: Script, draft: Draft) {
-  const { jsPDF } = await import('jspdf')
+export function buildScreenplayPdfJsDoc(script: Script, draft: Draft) {
   const doc = new jsPDF({ unit: 'in', format: 'letter' })
   const { margin, pageWidth, lineHeight } = SCREENPLAY_PDF_LAYOUT
 
@@ -187,7 +187,7 @@ export async function buildScreenplayPdfJsDoc(script: Script, draft: Draft) {
 }
 
 export async function exportPDF(script: Script, draft: Draft) {
-  const doc = await buildScreenplayPdfJsDoc(script, draft)
+  const doc = buildScreenplayPdfJsDoc(script, draft)
   doc.save(`${script.title} - Draft ${draft.draft_number}.pdf`)
 }
 

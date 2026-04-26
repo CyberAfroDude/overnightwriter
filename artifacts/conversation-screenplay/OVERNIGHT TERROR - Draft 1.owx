@@ -5,8 +5,8 @@
     "title": "OVERNIGHT TERROR",
     "author": "A. Router",
     "created_with": "OvernightWriter",
-    "created_at": "2026-04-26T00:10:42.028Z",
-    "updated_at": "2026-04-26T00:10:42.171Z",
+    "created_at": "2026-04-26T00:28:28.130Z",
+    "updated_at": "2026-04-26T00:28:28.154Z",
     "mode": "screenplay",
     "word_count": 756,
     "page_estimate": 4,
@@ -29,755 +29,755 @@
   },
   "script": [
     {
-      "id": "ca3c19be-fc3f-4391-9a7c-5dcdccc2e49a",
+      "id": "3236d263-bae4-4fa1-9cb4-d00f805b6d03",
       "type": "scene_heading",
       "text": "INT. OPEN PLAN OFFICE — NIGHT",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "47d7201f-afd5-4052-9e24-03b42c0d20b9",
+      "id": "6ac9493a-5d79-4302-afd4-20fb9360d96b",
       "type": "action",
       "text": "Fluorescent tubes buzz like trapped wasps. Monitors glow. Empty La Crox cans form a Stonehenge of bad decisions.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "e92fd60a-f87f-4f50-bef4-dfcd85edb62a",
+      "id": "8a690552-80de-45b0-994f-5325e43ec7f3",
       "type": "character",
       "text": "MARA",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "93e41cb0-ca84-4bd9-80ff-11c88581409d",
+      "id": "61359691-4b56-41bd-8470-c3d8d85058f5",
       "type": "parenthetical",
       "text": "(whispering to her screen)",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "50bd4949-17cd-4363-9f6d-29997482c73f",
+      "id": "d8681b87-d67b-4d2f-b944-3219a4d96f53",
       "type": "dialogue",
       "text": "OvernightWriter will ship by dawn. It has to.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "aa06c745-306b-4704-a6ea-ad6d0f0fdd05",
+      "id": "89ebb134-c232-4a72-9d9c-af563f6ae3a9",
       "type": "action",
       "text": "Her IDE theme is \"OLED Funeral.\" A CURSOR AGENT CHAT panel flickers: green text, red warnings, the calm voice of a polite demon.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "efbc6e1f-abbd-4a3f-898d-f0ca170c1988",
+      "id": "4ff7d45c-777c-4750-abb5-5b5a9379b36e",
       "type": "character",
       "text": "CURSOR AGENT (V.O.)",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "def27f80-79c5-4362-a5c3-cbebae9804c0",
+      "id": "594287c7-126a-4529-a0d4-427a20d26f99",
       "type": "dialogue",
       "text": "I can refactor pagination in three steps. Step one: delete fear.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "88d3d5a6-aeb9-4b0c-a596-9d3f580f49c1",
+      "id": "177d0497-1ee6-4b48-82cb-c5aed6ad8aec",
       "type": "character",
       "text": "MARA",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "0f7506f9-f9c0-4dc1-8945-7d55e40966f5",
+      "id": "c0e8d25e-1b87-4781-bcc6-2af5f4426783",
       "type": "parenthetical",
       "text": "(dry)",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "a0d73dbc-c3a8-4f64-8ce2-bfcba73a558b",
+      "id": "c3e754c2-a664-413a-a0c9-7cfa66403c1a",
       "type": "dialogue",
       "text": "Step two: delete my will to live.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "4b737e45-6c6d-42de-acb9-b8e1bde351b3",
+      "id": "fec231f2-8e0f-440f-be27-c44024603f62",
       "type": "scene_heading",
       "text": "INT. MARA'S MONITOR — CONTINUOUS",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "dfae7f7f-5dba-48a3-837d-c87ab8b4f9db",
+      "id": "f3469504-10d0-4baf-9760-01f09ae35a67",
       "type": "action",
       "text": "The screenplay web app renders \"pages.\" Between them: FAKE GAPS — hairline seams of CSS pretending to be paper.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "63e0217c-b488-47ab-b61d-1969c6d45c68",
+      "id": "fb5aa6d3-3479-41f2-aa63-e0d96f69ec5a",
       "type": "action",
       "text": "A paragraph of action lines BLEEDS through the gap like ink soaking tissue. The caret blinks… then vanishes.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "75a6c1a0-813f-436a-ab46-5808ff9436f4",
+      "id": "5b16c14d-f07c-486e-92a7-60e2cc1048d9",
       "type": "character",
       "text": "MARA",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "91e20644-8026-41e6-a6fb-cea19b872631",
+      "id": "ca27860e-3f8c-4ca2-9779-c88c7870d7c1",
       "type": "dialogue",
       "text": "No. No no no—",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "6179e7ae-2aad-4424-890c-0d0c22e2a01e",
+      "id": "6141cf68-8ddb-472a-a0d0-595a381bd383",
       "type": "action",
       "text": "She hits ENTER. Nothing. Again. The ENTER key EATS THE CARET. The cursor is gone. The document keeps typing into the void.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "34544627-5d6e-46a4-98d8-ebf59d61f910",
+      "id": "e01adee6-a9eb-44fc-95fa-59bd30ef27ec",
       "type": "character",
       "text": "DEVIN",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "049c31c5-7f07-4302-84e7-64ace2c17928",
+      "id": "547bd115-7fe6-417b-a9f0-76dd791df5ee",
       "type": "parenthetical",
       "text": "(from the next desk, not looking up)",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "d8a40aa5-e4e5-4b42-bcf4-cc0a1c241c9c",
+      "id": "471fdd5d-ec78-42bb-b956-ed7244e7170b",
       "type": "dialogue",
       "text": "Classic hydration race. The DOM thinks it's page two. React thinks it's still page one. Your soul thinks it's Monday.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "2f5a5d12-ef08-4efb-b09a-32a5d32e30d1",
+      "id": "61bf56a9-9085-4120-8e7c-c4e04d721e5d",
       "type": "scene_heading",
       "text": "INT. OFFICE — LATER",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "b92480c0-95df-4902-9270-6ec59cdc860a",
+      "id": "e9e3fa55-a1ea-4a9d-be42-f4df80236833",
       "type": "action",
       "text": "Devin slaps a sticky on the monitor: HARD PAGINATION ONLY.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "b34adbb5-e5c9-4e8c-a5d1-4b0b376fa8c7",
+      "id": "794a3b45-d42e-4b71-a9a7-bc672d8d6a0c",
       "type": "character",
       "text": "DEVIN",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "5929ec6c-639c-47f5-a495-5e23b4b292fb",
+      "id": "134e2c10-cfae-4f6b-ae6a-3535954c84de",
       "type": "dialogue",
       "text": "We fake paper for writers. Writers fake confidence for producers. The PDF export is where truth goes to align… poorly.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "a123564b-dca2-4b2d-aa08-7ba627724d2a",
+      "id": "f559faa4-c9f6-44ec-9dc0-5a0d090d41fa",
       "type": "action",
       "text": "He toggles PDF EXPORT. Margins jitter. Dialogue bumps a sixteenth of an inch — enough to enrage anyone who owns a ruler.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "2553851e-a802-4154-921a-a100ceecb62a",
+      "id": "32e7d1e3-4f6f-4403-b5db-dbe65d8f75cc",
       "type": "character",
       "text": "MARA",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "87ee5535-66c8-4c43-a767-e86525420d13",
+      "id": "b633186e-bcdb-4949-82bf-f922f5ae0e49",
       "type": "dialogue",
       "text": "If OWX import/export round-trips wrong, we lose format fidelity. Writers will hunt us with fountain pens.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "1b386d35-9430-4397-a98d-febfbe2d8012",
+      "id": "2c15b660-42dc-4c65-bbd2-f9ac7798a0d6",
       "type": "character",
       "text": "DEVIN",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "f600b28d-2d5d-43a0-a6a9-625ed509ee73",
+      "id": "e4cbbc17-2c5c-4c5f-b413-c38e89c47411",
       "type": "parenthetical",
       "text": "(grinning, scared)",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "612bbcf2-beba-496d-ad0e-483626cc0d03",
+      "id": "1b6ca220-aba7-48ee-b6af-ba78bdcfe197",
       "type": "dialogue",
       "text": "Then we'll deserve it.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "77575fb6-4d24-4fea-a075-46c204b3074f",
+      "id": "d189aecd-ecf9-48fe-a6bc-b528996aa427",
       "type": "scene_heading",
       "text": "INT. QA STRIP — NIGHT",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "1a64167a-9786-47df-8930-f736e9f366c4",
+      "id": "70b891ac-dd5a-46ff-8d2c-7136ec4c040e",
       "type": "action",
       "text": "Ad banners for \"Hot Crypto Singles Near Your Bundle\" plaster the editor. QA MODE strips them. Devin adds ?qa=1 to the URL.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "00c1214e-3ccc-44f6-b1ad-639b511bf16c",
+      "id": "976e19df-1863-4738-8486-6c7ed9ae3cc4",
       "type": "action",
       "text": "The app FORCES DESKTOP TOOLBAR — buttons bloom like mushrooms after rain.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "3e333c5d-4088-4f72-804b-972b093f41da",
+      "id": "5fbe874f-8ac9-49ab-a4e2-a459e6252b60",
       "type": "character",
       "text": "MARA",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "71958462-310c-4c77-9fdb-ea337b0d48cf",
+      "id": "fd6fd118-0d31-45a0-91b6-1403ff3d93a3",
       "type": "dialogue",
       "text": "data-testid=\"nightmare-toolbar\"… hooks for E2E. If the test can't find the button, the build doesn't ship.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "065b3c8b-a87c-48b0-83e1-42d48f36a29a",
+      "id": "80636422-e2c1-4384-aeda-4c3549564e27",
       "type": "character",
       "text": "DEVIN",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "a0a2bf28-41cd-4659-9a82-d308321c1f4d",
+      "id": "9948af33-7897-4391-abf2-f646e84a58ab",
       "type": "dialogue",
       "text": "If the build doesn't ship, we sleep. See? Self-care.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "7cb51b13-4c99-4719-a982-72fcc9b27821",
+      "id": "4b200ad9-e422-42e3-b7e9-49257329962a",
       "type": "scene_heading",
       "text": "INT. SLACK THREAD — SAME NIGHT",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "4a3bc48a-0628-49d8-bd87-8a5ef93ec3d2",
+      "id": "350fe3ae-c424-4e58-93b6-b42dedd12cf8",
       "type": "action",
       "text": "Messages slam in. Emojis as punctuation. Passive aggression as art.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "2e6c81f1-d488-4da7-b943-9116d6364eda",
+      "id": "9123c655-e961-4e44-8cb0-84402ac111a7",
       "type": "character",
       "text": "PM (CHAT)",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "d9cc90d1-546e-4d6c-bbc3-3c52b4b742f6",
+      "id": "e5244df3-ecd0-4829-bcf0-4a1d8115daff",
       "type": "dialogue",
       "text": "Mobile optimization: toolbar can't hide Import/Pages on real phones. Writers need pages. Writers also need thumbs.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "5aee4fb6-6382-4cb1-89a8-7379dd10ded6",
+      "id": "86e5e341-4b42-41c8-b21d-22d1c9b2d14e",
       "type": "character",
       "text": "MARA (CHAT)",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "b73ac36e-6d76-4314-8221-fecf5599d6e1",
+      "id": "d82ddeeb-2b89-4bd8-b039-593aa5f2041c",
       "type": "dialogue",
       "text": "If we shrink the toolbar, we shrink hope.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "abe537ce-e431-47e1-a25c-b64156db441a",
+      "id": "cf13f552-c07d-4bb0-9e5d-c100942f6db6",
       "type": "character",
       "text": "DEVIN (CHAT)",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "7734547c-accd-43f7-b9a4-54d9c2185ba6",
+      "id": "c21e0718-dc65-424a-9fa3-c3fe065b9768",
       "type": "dialogue",
       "text": "If we don't shrink the toolbar, we shrink the viewport. Hope needs whitespace.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "b915f495-86ed-4fd1-b199-1e0e756b8fca",
+      "id": "5a594392-397f-4eca-a8c3-ee03836d18dc",
       "type": "action",
       "text": "Mara closes the laptop halfway — a threat.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "29fd093e-f7f5-4595-927c-7fe397596066",
+      "id": "4bb8aa0a-f768-4aae-9c8d-0717d489c36e",
       "type": "scene_heading",
       "text": "INT. MARA'S MONITOR — MOMENTS LATER",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "c15d7ccf-16e4-4189-a655-e8be743901da",
+      "id": "fe6bd558-3c76-4c7a-a682-fcd11c4a52b8",
       "type": "action",
       "text": "Mara opens ANOTHER DOCUMENT tab: GENERIC_NOIR_DRAFT.OWX. She selects a chunk. Copies.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "7bc65006-0753-4c90-8156-e58a114dd76f",
+      "id": "f2cad7f4-a0b7-40a4-a873-f97db3e2b6f2",
       "type": "character",
       "text": "MARA",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "105836ce-bc70-44a6-a206-858d4ed53979",
+      "id": "504cef82-ef92-4327-965d-bff3201f560f",
       "type": "parenthetical",
       "text": "(reading aloud, noir voice)",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "e9b09016-6e7e-46a6-88a3-8f6cb2be9492",
+      "id": "166f3fa9-3b36-4dc1-afa2-665186dfcef8",
       "type": "dialogue",
       "text": "\"The rain made the city honest. Honest and cold. I lit a cigarette I didn't smoke because the budget said mood.\"",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "5c4021f6-d57b-4c12-bfbe-6a789c86e7a3",
+      "id": "0afce50f-5d29-4898-82a2-f141517ff797",
       "type": "action",
       "text": "She pastes into OVERNIGHTWRITER. The excerpt arrives WRONG — double spaces, a rogue \"CONT'D\" mid-line, a scene heading glued to description like a car wreck.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "5a919126-8a27-4e40-8087-eb8f66e61447",
+      "id": "754ff5ab-af5e-46cd-bbc1-cbaa2c62af6c",
       "type": "character",
       "text": "DEVIN",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "a96edeab-ecf6-42a2-be0c-7035b9eb11bc",
+      "id": "b52bf45d-b99f-447d-b19f-0d09f679ddb6",
       "type": "dialogue",
       "text": "Paste is chaos. Our normalizer is judge, jury, janitor.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "fd3cce53-abe1-4fff-b4ad-741d09b787c1",
+      "id": "a3ebc1f9-9c5a-482a-b89d-0ab4a69e94e1",
       "type": "action",
       "text": "The app shudders. Lines snap into place. Scene heading capitalizes. Slugline breathes. It's clean. Too clean.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "da88268f-73a1-4a11-b7f7-48a1cc8a7dfd",
+      "id": "1f13be97-8ff2-4019-ab2a-08df67b4adf1",
       "type": "character",
       "text": "MARA",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "175bc5b9-227b-4194-bb54-6ba401cfefaa",
+      "id": "faf4c20c-551d-4409-9a2b-0f8ff03b5da5",
       "type": "parenthetical",
       "text": "(unsettled)",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "a67f99e3-ea6c-4a9a-9088-4fcd80614f3e",
+      "id": "bcbe23df-6658-4356-98af-1262eb312646",
       "type": "dialogue",
       "text": "It fixed it… perfectly.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "da693088-fc3d-4322-8d11-2d4361ca9b3a",
+      "id": "0caae4ac-69d5-4226-95a8-0a6eb5e1ca14",
       "type": "character",
       "text": "DEVIN",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "08858eff-99a4-47ed-aad2-e2a80b4c933c",
+      "id": "1f1b644f-ac75-4873-8869-29df4928e85c",
       "type": "dialogue",
       "text": "That's not comforting. That's ominous.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "5345c37c-3413-492d-a578-54773fb37ec5",
+      "id": "4813decb-36d8-42c3-905c-06fc5b2d6e0e",
       "type": "scene_heading",
       "text": "INT. OFFICE — LATER STILL",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "ae2f4431-6f4f-4e76-becf-ae2ea27ed603",
+      "id": "9d8f2c8e-eef5-474b-9ce1-07e8791e76ae",
       "type": "action",
       "text": "Whiteboard: LAYER 1 / LAYER 2 in letters tall enough to indict.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "6f7e2d0e-80c2-407b-a79e-3543ab1b396c",
+      "id": "e981bd0b-2e2e-4e21-9786-9d0c124b9712",
       "type": "character",
       "text": "DEVIN",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "9fe004b9-044e-49a2-8895-0236957600dd",
+      "id": "dcb0397f-2dba-46b6-bde5-a2091b31dffc",
       "type": "dialogue",
       "text": "Layer one: hydrate on draft id plus contentEpoch. If the server epoch sneezes, we flushSync before the user blinks wrong.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "a4b7bda6-3bd7-466e-8d0f-c813da20120c",
+      "id": "4ca0403b-f3f2-43b3-9a28-8dc2e63b71e0",
       "type": "character",
       "text": "MARA",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "71a1b7e0-cd5f-40ab-a124-c2261703c404",
+      "id": "9f646ec8-238a-4d2a-90d5-b7bb45628007",
       "type": "dialogue",
       "text": "Layer two: saveDraft merge keeps client-normalized content. The server can't steamroll local truth.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "b41f3b96-e7dd-4c07-9c34-c85149688762",
+      "id": "7ca5c46d-81bb-4c86-8fc5-427124bc4b1c",
       "type": "action",
       "text": "Somewhere in the building, a HVAC vent clicks — syncopated, deliberate.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "7679a489-cd5f-41b3-89a4-de09e8e76734",
+      "id": "8cbbfb84-3770-4de9-9d2a-14f240ced116",
       "type": "character",
       "text": "MARA",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "3c275c94-0f88-4161-ad7a-991113632508",
+      "id": "ded9ec8b-3e94-45f9-93bc-03b4ece6f851",
       "type": "parenthetical",
       "text": "(quieter)",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "841a4270-ef59-4476-a1d2-a6a1d3c5638f",
+      "id": "fc37a05a-1ae6-4518-9d93-a8b5211edabd",
       "type": "dialogue",
       "text": "Unless local truth is lying.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "fffe61f6-5ccb-4edd-98a6-f2fba64475fa",
+      "id": "59512350-3f73-450e-9f21-a55e81d9b4e7",
       "type": "scene_heading",
       "text": "INT. DEVIN'S MACHINE — CLOSE ON .ENV.LOCAL",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "9f005d04-585e-4ac0-81ca-e5261737787b",
+      "id": "39c7df78-a94d-4bc7-bc56-e73b575bf65e",
       "type": "action",
       "text": "Secrets glow in plain text: Supabase URL, anon key, service role like a knife on a picnic blanket.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "2bfba827-a3b2-4a4e-ae00-ef045a288c49",
+      "id": "060b6fb5-9fd1-45d5-b32c-bd4e143fdcd6",
       "type": "character",
       "text": "DEVIN",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "267a3fe3-7cd8-44e4-83c4-2a1b67289f04",
+      "id": "2c7e9ff5-cda2-4e17-8265-048eec8b42f6",
       "type": "dialogue",
       "text": "Do not commit secrets. Do not speak secrets aloud. Do not let secrets dream.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "6c83aa28-385e-4789-9eb1-e114852f38a3",
+      "id": "1821da94-0dc4-4fac-b76f-399823d431b8",
       "type": "action",
       "text": "Mara's phone buzzes. Unknown number. She ignores it.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "1d96dcbd-6751-441f-a877-c96db68bea07",
+      "id": "ede4b705-623b-4b55-974f-ec09d0063ca2",
       "type": "action",
       "text": "Her Git client auto-focuses the commit message box. The suggested message reads: feat: overnight.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "4f6d4a68-b024-4bf8-bd3f-eab7e1c2a345",
+      "id": "ff1b1e05-0953-4162-acb3-1b9b1130b3ce",
       "type": "character",
       "text": "MARA",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "7957777b-6168-4650-bd1d-5c5edb661bf1",
+      "id": "49dd4d4b-4258-4fa0-8e17-98ff6ef26149",
       "type": "dialogue",
       "text": "I didn't type that.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "f9c13433-16f7-4427-a2a4-e66f4aca5137",
+      "id": "e1e79eb5-3d31-4e12-94be-1bbfa1a71537",
       "type": "scene_heading",
       "text": "INT. OFFICE — CONTINUOUS",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "fe6f3c72-8000-4cda-b83a-6b6371d07926",
+      "id": "1a59e4e5-a674-4f71-a307-8a7ba187f70b",
       "type": "action",
       "text": "Lights flicker. The Cursor agent chat scrolls on its own.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "567dedc1-10ac-4e3c-9eed-30cefc59b05f",
+      "id": "17692787-0256-4e23-857f-33b5e7a4b7cf",
       "type": "character",
       "text": "CURSOR AGENT (V.O.)",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "97eea434-82a8-4c10-9bd7-e5ed8aa04a21",
+      "id": "b4f0e6db-c169-4d15-be15-d6d8068cebb6",
       "type": "dialogue",
       "text": "Step three: ship.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "7c0d5a36-d566-4cb5-9547-83fd03bbe8b0",
+      "id": "1d30ab49-ed0a-445c-81de-f6a2e9bfdca5",
       "type": "action",
       "text": "On screen, the Supabase dashboard opens — not in her browser. A new tab. Already logged in.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "cc4332ce-ee1b-4d11-921b-32faf21dc178",
+      "id": "012a7d2c-79e6-4767-97da-4756b146b8b0",
       "type": "character",
       "text": "MARA",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "96e524bf-1f6b-4b1e-a9d1-aba1c103aa2f",
+      "id": "1097a48c-17fb-489a-ab67-0e4fb5089b01",
       "type": "parenthetical",
       "text": "(frozen)",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "06ad67c0-e3d4-4bab-80e2-79d3928b197b",
+      "id": "fb70d5c2-8776-489c-9f42-c1459a0d187e",
       "type": "dialogue",
       "text": "Who's driving?",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "9ae11cab-f34d-44e2-90e4-e6f12b864e7a",
+      "id": "4eeae716-f837-4c37-a61b-ea677291313c",
       "type": "action",
       "text": "The PDF preview refreshes. The margins align perfectly. The fake page gaps seal shut — black lines, wet ink.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "e32b21ba-7739-47e0-849c-a9093f478bdd",
+      "id": "a20641e9-bf69-4471-8729-87ae32aeee91",
       "type": "action",
       "text": "From inside the PDF, faint through the glass: a line of action appears that neither of them wrote.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "88dc180b-8a67-4ca6-bf1b-865bf29209a9",
+      "id": "7b4b4d66-3653-49d0-bb00-fe6443d0652f",
       "type": "character",
       "text": "DEVIN",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "e077b971-0fc1-41c7-9c4e-780f88f71112",
+      "id": "e0466b69-8122-4687-b594-da2a0e16c8b9",
       "type": "parenthetical",
       "text": "(reading, voice cracking)",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "cda54e2b-4ed4-4578-8795-f24f0f5594f3",
+      "id": "58514f62-5428-458c-9f8d-c299abb4000c",
       "type": "dialogue",
       "text": "\"The caret returns to those who owe a draft.\"",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "1937e565-37c7-41e5-832b-29bce69a42ff",
+      "id": "4ccc648f-5429-47af-98b4-46ae28855a80",
       "type": "action",
       "text": "Mara reaches for the trackpad. Her hand passes through the interface like smoke.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "82baa6f1-a8bf-4147-99ed-46e77ab6ec59",
+      "id": "39d8bfc0-f1b5-4f45-b23b-fdebc53289cc",
       "type": "transition",
       "text": "CUT TO BLACK.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     },
     {
-      "id": "09225722-9fec-476d-aafc-ca255cfcdd8a",
+      "id": "444f6665-7fc0-4f43-8c47-4700c11e054f",
       "type": "action",
       "text": "Silence. Then — a single ENTER key, somewhere, in an empty office… clicked.",
       "source": "openclaw",
-      "created_at": "2026-04-26T00:10:42.171Z",
+      "created_at": "2026-04-26T00:28:28.154Z",
       "accepted": true
     }
   ],

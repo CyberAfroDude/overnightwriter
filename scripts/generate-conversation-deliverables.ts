@@ -182,7 +182,7 @@ async function main() {
   const fdx = buildFdxDocument(script, draft)
   writeFileSync(join(outDir, `${base}.fdx`), fdx, 'utf8')
 
-  const doc = await buildScreenplayPdfJsDoc(script, draft)
+  const doc = buildScreenplayPdfJsDoc(script, draft)
   const buf = doc.output('arraybuffer') as ArrayBuffer
   writeFileSync(join(outDir, `${base}.pdf`), Buffer.from(buf))
 
